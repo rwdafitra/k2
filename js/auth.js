@@ -1,7 +1,4 @@
 const form = document.getElementById('login-form');
-const emailInput = document.getElementById('emailInput');
-const passwordInput = document.getElementById('passwordInput');
-const info = document.getElementById('info');
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -13,7 +10,8 @@ form.addEventListener('submit', async (e) => {
 
   if (error) {
     info.innerText = error.message;
-  } else {
-    window.location.href = 'dashboard.html';
+    return;
   }
+
+  location.replace('dashboard.html');
 });
