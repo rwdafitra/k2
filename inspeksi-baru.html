@@ -1,28 +1,52 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Inspeksi Baru</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Input Inspeksi | MiningInspect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="css/app.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="js/app.js" defer></script>
   <script src="js/inspeksi-baru.js" defer></script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-slate-50">
   <div id="navbar"></div>
+
   <div class="app-container">
-    <h1 class="text-2xl font-bold mb-4">Inspeksi Baru</h1>
-    <div class="bg-white p-4 rounded shadow mb-6">
-      <h2 class="font-semibold mb-3">Informasi Utama</h2>
-      <input type="date" id="tanggal" class="w-full p-2 border rounded mb-2">
-      <input type="text" id="lokasi" class="w-full p-2 border rounded mb-2" placeholder="Lokasi Tambang">
-      <input type="text" id="area" class="w-full p-2 border rounded" placeholder="Area Kerja">
+    <div class="mb-8">
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Formulir Inspeksi</h1>
+      <p class="text-slate-500 font-medium">Lengkapi data temuan dan lampirkan bukti foto.</p>
     </div>
+
+    <div class="card-pro p-8 mb-8">
+      <h2 class="text-sm font-bold text-blue-700 uppercase tracking-widest mb-6">Informasi Utama</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Tanggal Inspeksi</label>
+          <input type="date" id="tanggal_inspeksi" class="input-pro">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Lokasi Tambang</label>
+          <input type="text" id="lokasi_tambang" class="input-pro" placeholder="Nama Pit/Lokasi">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Area Kerja</label>
+          <input type="text" id="area_kerja" class="input-pro" placeholder="Area Kerja">
+        </div>
+      </div>
+    </div>
+
     <div id="findingsContainer"></div>
-    <button id="btnAddFinding" class="w-full bg-blue-700 text-white py-2 rounded mb-4">+ Tambah Temuan</button>
-    <button id="btnSubmit" class="w-full bg-green-600 text-white py-3 rounded font-bold">SIMPAN INSPEKSI</button>
+
+    <div class="flex flex-col md:flex-row gap-4 mt-8">
+      <button id="btnAddFinding" class="flex-1 bg-white border-2 border-blue-700 text-blue-700 py-4 rounded-xl font-bold hover:bg-blue-50 transition">
+        + TAMBAH TEMUAN LAIN
+      </button>
+      <button id="btnSubmit" class="flex-1 bg-green-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-green-700 transition transform active:scale-95">
+        SIMPAN SEMUA DATA
+      </button>
+    </div>
   </div>
 </body>
 </html>
