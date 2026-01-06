@@ -41,10 +41,10 @@ function addFinding() {
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-1 tracking-widest">Tingkat Risiko</label>
                 <select class="input-pro" data-field="tingkat_risiko">
-                    <option value="Rendah">Rendah</option>
-                    <option value="Sedang">Sedang</option>
-                    <option value="Tinggi">Tinggi</option>
-                    <option value="Ekstrim">Ekstrim</option>
+                    <option value="RENDAH">Rendah</option>
+                    <option value="SEDANG">Sedang</option>
+                    <option value="TINGGI">Tinggi</option>
+                    <option value="EKSTRIM">Ekstrim</option>
                 </select>
             </div>
 
@@ -79,8 +79,7 @@ async function submitInspection() {
         const { data: { user } } = await window.supabaseClient.auth.getUser();
         if (!user) throw new Error("Sesi berakhir, silakan login ulang.");
 
-        // PERBAIKAN: Status diubah menjadi 'DRAFT' (Huruf Kapital) 
-        // untuk melewati 'inspections_status_check'
+        // PERBAIKAN: Pastikan status dan risiko menggunakan KAPITAL
         const { data: inspection, error: insError } = await window.supabaseClient
             .from('inspections')
             .insert({
@@ -88,10 +87,10 @@ async function submitInspection() {
                 lokasi_tambang: lokasi,
                 area_kerja: area,
                 inspector_id: user.id,
-                status: 'DRAFT',                // <-- Huruf kapital
+                status: 'DRAFT',                
                 uraian_temuan: uraianPertama,
                 rekomendasi: rekomendasiPertama,
-                tingkat_risiko: risikoPertama
+                tingkat_risiko: risikoPertama     // <-- Sudah Kapital dari dropdown
             }).select().single();
 
         if (insError) throw insError;
@@ -101,7 +100,12 @@ async function submitInspection() {
         for (const card of findingCards) {
             const dataFinding = { inspection_id: inspection.id };
             card.querySelectorAll('[data-field]').forEach(el => {
-                dataFinding[el.dataset.field] = el.value;
+                // Pastikan data tingkat_risiko di detail juga kapital
+                if(el.dataset.field === 'tingkat_risiko') {
+                    dataFinding[el.dataset.field] = el.value.toUpperCase();
+                } else {
+                    dataFinding[el.dataset.field] = el.value;
+                }
             });
 
             const { data: savedFinding, error: findError } = await window.supabaseClient
