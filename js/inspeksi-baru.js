@@ -63,9 +63,9 @@ async function submitInspection() {
     const lokasi = document.getElementById('lokasi_tambang').value;
     const area = document.getElementById('area_kerja').value;
 
-    const uraianPertama = document.getElementById('first_finding_text').value;
-    const rekomendasiPertama = document.getElementById('first_recom_text').value;
-    const risikoPertama = document.querySelector('[data-field="tingkat_risiko"]').value;
+    const uraianPertama = document.getElementById('first_finding_text')?.value;
+    const rekomendasiPertama = document.getElementById('first_recom_text')?.value;
+    const risikoPertama = document.querySelector('[data-field="tingkat_risiko"]')?.value;
 
     if (!tanggal || !lokasi || !uraianPertama) {
         alert("Mohon isi Tanggal, Lokasi, dan Uraian Temuan!");
@@ -76,8 +76,11 @@ async function submitInspection() {
     btn.innerText = "SEDANG MENYIMPAN DATA...";
 
     try {
-        const { data: { user } } = await window.supabaseClient.auth.getUser();
-        if (!user) throw new Error("Sesi berakhir, silakan login ulang.");
+        // Ambil session user aktif
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        if (!session) throw new Error("Sesi berakhir, silakan login ulang.");
+        
+        const userId = session.user.id;
 
         // 1. Simpan Inspeksi Utama
         const { data: inspection, error: insError } = await window.supabaseClient
@@ -86,7 +89,7 @@ async function submitInspection() {
                 tanggal_inspeksi: tanggal,
                 lokasi_tambang: lokasi,
                 area_kerja: area,
-                inspector_id: user.id,
+                inspector_id: userId,
                 status: 'DRAFT',                
                 uraian_temuan: uraianPertama,
                 rekomendasi: rekomendasiPertama,
@@ -116,20 +119,20 @@ async function submitInspection() {
 
             if (file) {
                 const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
-                const filePath = `inspeksi/${user.id}/${fileName}`;
+                const filePath = `inspeksi/${userId}/${fileName}`;
 
                 const { error: uploadError } = await window.supabaseClient.storage
                     .from('inspeksi_files')
                     .upload(filePath, file);
 
-                if (uploadError) throw uploadError;
-
-                await window.supabaseClient.from('inspection_photos').insert({
-                    inspection_id: inspection.id,
-                    finding_id: savedFinding.id,
-                    file_path: filePath,
-                    uploaded_by: user.id
-                });
+                if (!uploadError) {
+                    await window.supabaseClient.from('inspection_photos').insert({
+                        inspection_id: inspection.id,
+                        finding_id: savedFinding.id,
+                        file_path: filePath,
+                        uploaded_by: userId
+                    });
+                }
             }
         }
 
@@ -138,7 +141,7 @@ async function submitInspection() {
 
     } catch (err) {
         console.error("Error Detail:", err);
-        alert("Gagal menyimpan: " + (err.message || "Terjadi kesalahan sistem"));
+        alert("Gagal menyimpan: " + (err.message || "Cek apakah ID User anda sudah ada di tabel profiles"));
     } finally {
         btn.disabled = false;
         btn.innerText = "SIMPAN SEMUA DATA";
