@@ -63,7 +63,6 @@ async function submitInspection() {
     const lokasi = document.getElementById('lokasi_tambang').value;
     const area = document.getElementById('area_kerja').value;
 
-    // Ambil teks dari temuan pertama untuk memenuhi syarat database (NOT NULL)
     const uraianPertama = document.getElementById('first_finding_text').value;
     const rekomendasiPertama = document.getElementById('first_recom_text').value;
     const risikoPertama = document.querySelector('[data-field="tingkat_risiko"]').value;
@@ -80,7 +79,8 @@ async function submitInspection() {
         const { data: { user } } = await window.supabaseClient.auth.getUser();
         if (!user) throw new Error("Sesi berakhir, silakan login ulang.");
 
-        // 1. Simpan Inspeksi Utama (Mengisi uraian_temuan agar tidak error NOT NULL)
+        // PERBAIKAN: Status diubah menjadi 'DRAFT' (Huruf Kapital) 
+        // untuk melewati 'inspections_status_check'
         const { data: inspection, error: insError } = await window.supabaseClient
             .from('inspections')
             .insert({
@@ -88,15 +88,14 @@ async function submitInspection() {
                 lokasi_tambang: lokasi,
                 area_kerja: area,
                 inspector_id: user.id,
-                status: 'draft',
-                uraian_temuan: uraianPertama,      // <--- INI PERBAIKANNYA
-                rekomendasi: rekomendasiPertama,     // <--- INI PERBAIKANNYA
-                tingkat_risiko: risikoPertama       // <--- INI PERBAIKANNYA
+                status: 'DRAFT',                // <-- Huruf kapital
+                uraian_temuan: uraianPertama,
+                rekomendasi: rekomendasiPertama,
+                tingkat_risiko: risikoPertama
             }).select().single();
 
         if (insError) throw insError;
 
-        // 2. Simpan Temuan Detail & Foto ke tabel inspection_findings
         const findingCards = document.querySelectorAll('.finding-card');
         
         for (const card of findingCards) {
@@ -111,7 +110,6 @@ async function submitInspection() {
             
             if (findError) throw findError;
 
-            // Proses Foto (Storage)
             const fileInput = card.querySelector('.file-input');
             const file = fileInput.files[0];
 
