@@ -1,62 +1,58 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  // Tunggu sebentar untuk memastikan supabaseClient sudah siap dari app.js
-  setTimeout(loadDashboardData, 500);
+  // Tunggu app.js siap
+  setTimeout(loadDashboardData, 800);
 });
 
 async function loadDashboardData() {
   const { data: { user } } = await window.supabaseClient.auth.getUser();
   if (!user) return;
 
-  // 1. Ambil Data Inspeksi
   const { data: inspections, error } = await window.supabaseClient
     .from('inspections')
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching data:', error.message);
-    return;
-  }
+  if (error) return;
 
-  // 2. Update Counter Summary
-  const total = inspections.length;
-  const draft = inspections.filter(i => i.status === 'draft').length;
-  const closed = inspections.filter(i => i.status === 'closed').length;
+  // Update Statistik
+  document.getElementById('total-inspeksi').innerText = inspections.length;
+  document.getElementById('total-draft').innerText = inspections.filter(i => i.status === 'draft').length;
+  document.getElementById('total-closed').innerText = inspections.filter(i => i.status === 'closed').length;
 
-  document.getElementById('total-inspeksi').innerText = total;
-  document.getElementById('total-draft').innerText = draft;
-  document.getElementById('total-closed').innerText = closed;
-
-  // 3. Tampilkan List Inspeksi
   const listContainer = document.getElementById('inspection-list');
   
   if (inspections.length === 0) {
-    listContainer.innerHTML = '<p class="text-center py-4">Belum ada data inspeksi.</p>';
+    listContainer.innerHTML = '<div class="p-20 text-center text-slate-400 font-medium italic">Belum ada riwayat data inspeksi.</div>';
     return;
   }
 
   listContainer.innerHTML = `
-    <table class="w-full text-left border-collapse">
-      <thead>
-        <tr class="border-b">
-          <th class="py-2">Tanggal</th>
-          <th class="py-2">Lokasi</th>
-          <th class="py-2">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${inspections.map(ins => `
-          <tr class="border-b hover:bg-gray-50 cursor-pointer">
-            <td class="py-2">${new Date(ins.tanggal_inspeksi).toLocaleDateString('id-ID')}</td>
-            <td class="py-2 font-medium">${ins.lokasi_tambang}</td>
-            <td class="py-2">
-              <span class="px-2 py-1 rounded text-xs ${ins.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}">
-                ${ins.status.toUpperCase()}
-              </span>
-            </td>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="text-slate-400 text-[11px] uppercase tracking-widest border-b">
+            <th class="px-8 py-4">Waktu & Tanggal</th>
+            <th class="px-8 py-4">Lokasi / Area</th>
+            <th class="px-8 py-4 text-center">Status</th>
           </tr>
-        `).join('')}
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="text-slate-700 font-medium">
+          ${inspections.map(ins => `
+            <tr class="border-b border-slate-50 hover:bg-slate-50 transition cursor-pointer">
+              <td class="px-8 py-5 text-sm">${new Date(ins.tanggal_inspeksi).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</td>
+              <td class="px-8 py-5 text-sm">
+                <span class="block font-bold text-slate-900">${ins.lokasi_tambang}</span>
+                <span class="text-xs text-slate-400">${ins.area_kerja || '-'}</span>
+              </td>
+              <td class="px-8 py-5 text-center text-xs">
+                <span class="px-4 py-1.5 rounded-full font-bold shadow-sm ${ins.status === 'draft' ? 'bg-yellow-50 text-yellow-600' : 'bg-green-50 text-green-600'}">
+                  ${ins.status.toUpperCase()}
+                </span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
   `;
 }

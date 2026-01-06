@@ -1,22 +1,40 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Login | Inspeksi Tambang</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Login | MiningInspect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="js/app.js" defer></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-6 rounded shadow w-full max-w-sm">
-    <h1 class="text-xl font-bold text-center mb-4">Aplikasi Inspeksi Tambang</h1>
-    <form id="login-form">
-      <input id="emailInput" type="email" class="w-full p-2 border rounded mb-3" placeholder="Email" required />
-      <input id="passwordInput" type="password" class="w-full p-2 border rounded mb-4" placeholder="Password" required />
-      <button class="w-full bg-blue-700 text-white py-2 rounded font-semibold">Login</button>
+<body class="bg-slate-50 flex items-center justify-center min-h-screen p-4">
+  <div class="card-pro w-full max-w-md p-10">
+    <div class="text-center mb-10">
+      <div class="w-16 h-16 bg-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-200">
+        <span class="text-white font-bold text-3xl">K2</span>
+      </div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Login Portal</h1>
+      <p class="text-slate-500 mt-2 font-medium">Sistem Inspeksi Keselamatan Kerja</p>
+    </div>
+
+    <form id="login-form" class="space-y-6">
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-2">Email Perusahaan</label>
+        <input id="emailInput" type="email" class="input-pro" placeholder="admin@mining.com" required>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold text-slate-700 mb-2">Password</label>
+        <input id="passwordInput" type="password" class="input-pro" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="w-full btn-primary py-4 shadow-lg shadow-blue-100 flex justify-center items-center">
+        <span>Masuk ke Dashboard</span>
+      </button>
     </form>
-    <p id="info" class="text-sm text-red-600 mt-3 text-center"></p>
+    <p id="info" class="text-sm text-red-500 mt-6 text-center font-semibold"></p>
   </div>
 </body>
 </html>

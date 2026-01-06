@@ -1,10 +1,21 @@
-<nav class="bg-blue-700 text-white p-4">
-  <div class="max-w-6xl mx-auto flex justify-between items-center">
-    <div class="font-bold">MINING INSPECT</div>
-    <div class="flex space-x-4 text-sm">
-      <a href="dashboard.html" class="hover:text-gray-200">Dashboard</a>
-      <a href="inspeksi-baru.html" class="hover:text-gray-200">Inspeksi Baru</a>
-      <button id="btnLogout" class="bg-red-500 px-3 py-1 rounded">Logout</button>
+<nav class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200">
+  <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 bg-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+        <span class="text-white font-bold text-xl">K2</span>
+      </div>
+      <div>
+        <span class="block font-bold text-slate-800 text-lg leading-none uppercase tracking-wider">MiningInspect</span>
+        <span class="text-[10px] text-slate-500 font-medium tracking-widest uppercase">Safety First</span>
+      </div>
+    </div>
+    
+    <div class="hidden md:flex items-center space-x-8 text-sm font-semibold">
+      <a href="dashboard.html" class="text-slate-600 hover:text-blue-700 transition">Dashboard</a>
+      <a href="inspeksi-baru.html" class="text-slate-600 hover:text-blue-700 transition">Inspeksi Baru</a>
+      <button id="btnLogout" class="bg-slate-900 text-white px-5 py-2.5 rounded-full hover:bg-red-600 transition shadow-md">
+        Logout
+      </button>
     </div>
   </div>
 </nav>

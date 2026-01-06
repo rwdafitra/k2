@@ -1,27 +1,50 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Dashboard | MiningInspect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="css/app.css" rel="stylesheet">
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="js/app.js" defer></script>
-<script src="js/dashboard.js" defer></script>
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/app.js" defer></script>
+  <script src="js/dashboard.js" defer></script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-slate-50">
   <div id="navbar"></div>
+  
   <div class="app-container">
-    <h1 class="text-2xl font-bold mb-4">Dashboard</h1>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-white p-4 rounded shadow">Total Inspeksi<br><b id="total-inspeksi">–</b></div>
-      <div class="bg-white p-4 rounded shadow">Draft<br><b id="total-draft">–</b></div>
-      <div class="bg-white p-4 rounded shadow">Closed<br><b id="total-closed">–</b></div>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+      <div>
+        <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Overview</h1>
+        <p class="text-slate-500 font-medium">Monitoring keselamatan area tambang hari ini.</p>
+      </div>
+      <a href="inspeksi-baru.html" class="btn-primary text-center">
+        + Buat Inspeksi Baru
+      </a>
     </div>
-    <div class="bg-white rounded shadow p-4">
-      <h2 class="font-semibold mb-2">Inspeksi Terakhir</h2>
-      <div id="inspection-list" class="text-sm text-gray-500">Memuat data...</div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div class="card-pro p-8 border-t-4 border-blue-600">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Laporan</p>
+        <p class="text-4xl font-extrabold text-slate-900 mt-2" id="total-inspeksi">0</p>
+      </div>
+      <div class="card-pro p-8 border-t-4 border-yellow-500">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Status Draft</p>
+        <p class="text-4xl font-extrabold text-slate-900 mt-2" id="total-draft">0</p>
+      </div>
+      <div class="card-pro p-8 border-t-4 border-green-500">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Selesai (Closed)</p>
+        <p class="text-4xl font-extrabold text-slate-900 mt-2" id="total-closed">0</p>
+      </div>
+    </div>
+
+    <div class="card-pro overflow-hidden">
+      <div class="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <h2 class="font-bold text-slate-800 uppercase text-sm tracking-wider">Aktivitas Terakhir</h2>
+      </div>
+      <div id="inspection-list" class="min-h-[200px]">
+        </div>
     </div>
   </div>
 </body>
