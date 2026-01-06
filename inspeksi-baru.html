@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Inspeksi Baru</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="css/app.css" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/app.js" defer></script>
+  <script src="js/inspeksi-baru.js" defer></script>
+</head>
+<body class="bg-gray-100">
+  <div id="navbar"></div>
+  <div class="app-container">
+    <h1 class="text-2xl font-bold mb-4">Inspeksi Baru</h1>
+    <div class="bg-white p-4 rounded shadow mb-6">
+      <h2 class="font-semibold mb-3">Informasi Utama</h2>
+      <input type="date" id="tanggal" class="w-full p-2 border rounded mb-2">
+      <input type="text" id="lokasi" class="w-full p-2 border rounded mb-2" placeholder="Lokasi Tambang">
+      <input type="text" id="area" class="w-full p-2 border rounded" placeholder="Area Kerja">
+    </div>
+    <div id="findingsContainer"></div>
+    <button id="btnAddFinding" class="w-full bg-blue-700 text-white py-2 rounded mb-4">+ Tambah Temuan</button>
+    <button id="btnSubmit" class="w-full bg-green-600 text-white py-3 rounded font-bold">SIMPAN INSPEKSI</button>
+  </div>
+</body>
+</html>

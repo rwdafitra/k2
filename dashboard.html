@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="css/app.css" rel="stylesheet">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/app.js" defer></script>
+<script src="js/dashboard.js" defer></script>
+</head>
+<body class="bg-gray-100">
+  <div id="navbar"></div>
+  <div class="app-container">
+    <h1 class="text-2xl font-bold mb-4">Dashboard</h1>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white p-4 rounded shadow">Total Inspeksi<br><b id="total-inspeksi">–</b></div>
+      <div class="bg-white p-4 rounded shadow">Draft<br><b id="total-draft">–</b></div>
+      <div class="bg-white p-4 rounded shadow">Closed<br><b id="total-closed">–</b></div>
+    </div>
+    <div class="bg-white rounded shadow p-4">
+      <h2 class="font-semibold mb-2">Inspeksi Terakhir</h2>
+      <div id="inspection-list" class="text-sm text-gray-500">Memuat data...</div>
+    </div>
+  </div>
+</body>
+</html>
