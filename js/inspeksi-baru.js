@@ -57,16 +57,23 @@ async function submitInspection() {
 
     try {
         const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) throw new Error("Sesi berakhir, silakan login kembali.");
+
         const tanggal_inspeksi = document.getElementById('tanggal_inspeksi').value;
         const lokasi_tambang = document.getElementById('lokasi_tambang').value;
         const area_kerja = document.getElementById('area_kerja').value;
 
-        if (!tanggal_inspeksi || !lokasi_tambang) throw new Error("Lengkapi data utama!");
+        if (!tanggal_inspeksi || !lokasi_tambang) {
+            throw new Error("Mohon lengkapi Tanggal dan Lokasi Tambang.");
+        }
 
-        // Ambil temuan pertama untuk mengisi kolom 'uraian_temuan' di tabel inspections (jika memang dipaksa NOT NULL)
-        const firstFindingText = document.querySelector('.what-input')?.value || "Laporan Inspeksi";
+        // Ambil data dari kartu temuan pertama untuk mengisi kolom wajib di tabel inspections
+        const firstCard = document.querySelector('.finding-card');
+        const firstWhat = firstCard.querySelector('.what-input').value || "Laporan Inspeksi Rutin";
+        const firstRisiko = firstCard.querySelector('.risiko-input').value || "LOW";
 
-        // 1. Simpan Header Inspeksi
+        // 1. Simpan Header Inspeksi (Sesuai RLS inspections_self_insert)
+        // Kita kirimkan uraian_temuan dan tingkat_risiko agar tidak kena error NULL constraint
         const { data: inspection, error: insError } = await window.supabaseClient
             .from('inspections')
             .insert({
@@ -75,56 +82,69 @@ async function submitInspection() {
                 area_kerja,
                 inspector_id: user.id,
                 status: 'DRAFT',
-                uraian_temuan: firstFindingText // <--- Menambah kolom ini untuk mengatasi error NOT NULL
+                uraian_temuan: firstWhat, 
+                tingkat_risiko: firstRisiko
             }).select().single();
 
         if (insError) throw insError;
 
-        // 2. Simpan Semua Kartu Temuan
+        // 2. Simpan Detail Temuan & Foto
         const cards = document.querySelectorAll('.finding-card');
         for (const card of cards) {
             const what = card.querySelector('.what-input').value;
-            if (!what) continue;
+            if (!what) continue; // Abaikan kartu yang kosong
 
+            const risiko = card.querySelector('.risiko-input').value;
+            const rekomendasi = card.querySelector('.rekomendasi-input').value;
+            const whereLoc = card.querySelector('.where-input').value || lokasi_tambang;
+
+            // Simpan ke inspection_findings (Sesuai RLS findings_inspector_insert)
             const { data: finding, error: fError } = await window.supabaseClient
                 .from('inspection_findings')
                 .insert({
                     inspection_id: inspection.id,
                     what: what,
-                    uraian_temuan: what, // Di tabel findings kolom ini juga biasanya wajib
-                    tingkat_risiko: card.querySelector('.risiko-input').value,
-                    rekomendasi: card.querySelector('.rekomendasi-input').value,
-                    where_location: card.querySelector('.where-input').value || lokasi_tambang,
+                    uraian_temuan: what,
+                    tingkat_risiko: risiko,
+                    rekomendasi: rekomendasi,
+                    where_location: whereLoc,
                     status: 'OPEN'
                 }).select().single();
 
             if (fError) throw fError;
 
-            // 3. Upload Foto
-            const file = card.querySelector('.file-input').files[0];
+            // 3. Proses Upload Foto (Sesuai RLS photos_inspector_insert)
+            const fileInput = card.querySelector('.file-input');
+            const file = fileInput.files[0];
+
             if (file) {
-                const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
                 const filePath = `inspeksi/${user.id}/${fileName}`;
                 
-                const { error: upErr } = await window.supabaseClient.storage
-                    .from('inspeksi_files').upload(filePath, file);
+                const { error: uploadError } = await window.supabaseClient.storage
+                    .from('inspeksi_files')
+                    .upload(filePath, file);
 
-                if (!upErr) {
+                if (!uploadError) {
                     await window.supabaseClient.from('inspection_photos').insert({
                         inspection_id: inspection.id,
                         finding_id: finding.id,
                         file_path: filePath,
                         uploaded_by: user.id
                     });
+                } else {
+                    console.error("Gagal upload foto:", uploadError.message);
                 }
             }
         }
 
-        alert("Berhasil disimpan!");
+        alert("Berhasil! Laporan inspeksi telah disimpan.");
         window.location.href = 'dashboard.html';
+
     } catch (err) {
-        console.error("Full Error:", err);
-        alert("Gagal: " + (err.message || "Kesalahan tidak diketahui"));
+        console.error("Error Simpan:", err);
+        alert("Gagal menyimpan: " + (err.message || "Terjadi kesalahan sistem"));
     } finally {
         btn.disabled = false;
         btn.innerText = "SIMPAN SEMUA DATA";
