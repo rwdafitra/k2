@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Detail Inspeksi | MiningInspect</title>
+  <title>Laporan Detail Inspeksi | MiningInspect</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/app.css">
@@ -11,65 +11,109 @@
   <script src="js/app.js" defer></script>
   <script src="js/detail-inspeksi.js" defer></script>
   <style>
-    #signature-pad { touch-action: none; }
+    #signature-pad { touch-action: none; background-color: #f8fafc; }
     .html2pdf__page-break { page-break-after: always; }
+    @media print { .no-print { display: none !important; } }
+    .card-report { border: 1px solid #e2e8f0; border-radius: 1rem; overflow: hidden; background: white; }
   </style>
 </head>
-<body class="bg-slate-50">
+<body class="bg-slate-50 text-slate-900">
   <div id="navbar"></div>
-  <div class="app-container">
-    <div id="printable-area" class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
+
+  <div class="max-w-5xl mx-auto py-8 px-4">
+    <div id="printable-area" class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200">
       
-      <div class="flex justify-between items-start mb-8 border-b pb-6">
+      <div class="bg-slate-900 p-8 text-white flex justify-between items-center">
         <div>
-          <a href="dashboard.html" class="text-blue-600 font-bold text-sm hover:underline no-print mb-4 inline-block">← Kembali</a>
-          <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Laporan Inspeksi</h1>
+          <h1 class="text-2xl font-black tracking-tighter uppercase">MiningInspect <span class="text-blue-400">K2</span></h1>
+          <p class="text-slate-400 text-xs mt-1 italic uppercase tracking-widest">Official Safety Inspection Report</p>
         </div>
-        <button id="btnDownloadPDF" class="no-print bg-red-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-red-700 transition">Cetak PDF</button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 bg-slate-50 p-6 rounded-2xl border">
-        <div><p class="text-[10px] font-black text-slate-400 uppercase mb-1">Tanggal</p><p id="det-tanggal" class="font-bold">-</p></div>
-        <div><p class="text-[10px] font-black text-slate-400 uppercase mb-1">Lokasi</p><p id="det-lokasi" class="font-bold">-</p></div>
-        <div><p class="text-[10px] font-black text-slate-400 uppercase mb-1">Area</p><p id="det-area" class="font-bold">-</p></div>
-      </div>
-
-      <div id="findings-list" class="space-y-6 mb-10"></div>
-
-      <div class="mt-10 pt-8 border-t border-slate-200">
-        <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">Saran & Arahan Manajemen</h2>
-        <div id="comments-thread" class="space-y-4 mb-6">
-          <p class="text-xs text-slate-400 italic">Belum ada arahan manajemen.</p>
-        </div>
-        <div id="admin-comment-form" class="hidden no-print bg-slate-50 p-6 rounded-2xl border">
-          <label class="block text-xs font-bold text-slate-500 mb-2 uppercase">Input Saran Sebagai <span id="label-role" class="text-blue-600"></span></label>
-          <textarea id="input-comment-text" class="w-full border rounded-xl p-3 text-sm mb-3" placeholder="Tulis instruksi perbaikan..."></textarea>
-          <button id="btnSubmitComment" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold text-xs uppercase">Kirim Komentar</button>
+        <div class="text-right no-print">
+          <button id="btnDownloadPDF" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl font-bold transition-all shadow-lg">Cetak PDF</button>
         </div>
       </div>
 
-      <div class="mt-12 pt-8 border-t border-slate-200">
-        <div class="w-full max-w-sm">
-          <h2 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Pengesahan Inspektur</h2>
-          <div class="relative bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-2 mb-4">
-            <canvas id="signature-pad" class="w-full h-40 cursor-crosshair" width="400" height="200"></canvas>
-            <button id="btnClearSign" class="no-print absolute top-2 right-2 text-[10px] bg-white border px-2 py-1 rounded-full font-bold text-red-600">RESET</button>
+      <div class="p-8 md:p-12">
+        <a href="dashboard.html" class="no-print text-blue-600 font-bold text-sm mb-6 inline-block hover:underline">← Kembali ke Dashboard</a>
+
+        <div class="flex flex-col md:flex-row justify-between mb-12 gap-6 border-b pb-8">
+          <div>
+            <h2 class="text-4xl font-black text-slate-800 leading-tight">Detail <br>Hasil Inspeksi</h2>
           </div>
-          <p id="inspector-name" class="font-extrabold text-slate-900 border-b-2 border-slate-900 inline-block px-4 uppercase">-</p>
-          <p class="text-[10px] font-black text-blue-600 uppercase mt-2">Safety Inspector</p>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-4">
+            <div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tanggal</p>
+              <p id="det-tanggal" class="font-bold text-slate-700">-</p>
+            </div>
+            <div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi</p>
+              <p id="det-lokasi" class="font-bold text-slate-700">-</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Area Kerja</p>
+              <p id="det-area" class="font-bold text-slate-700">-</p>
+            </div>
+          </div>
         </div>
+
+        <div id="findings-list" class="space-y-12">
+           </div>
+
+        <div class="mt-16 pt-10 border-t-2 border-slate-100">
+          <div class="flex items-center gap-3 mb-8">
+            <div class="h-1 w-12 bg-blue-600 rounded-full"></div>
+            <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Arahan & Saran Manajemen</h3>
+          </div>
+          
+          <div id="comments-thread" class="space-y-4 mb-8">
+            </div>
+
+          <div id="admin-comment-form" class="hidden no-print bg-slate-50 p-6 rounded-2xl border-2 border-dashed border-slate-200">
+            <label class="block text-[10px] font-black text-slate-500 uppercase mb-3">Tulis Saran Sebagai <span id="label-role" class="text-blue-600"></span></label>
+            <textarea id="input-comment-text" class="w-full border-0 focus:ring-2 focus:ring-blue-500 rounded-xl p-4 text-sm shadow-inner mb-3" rows="3" placeholder="Berikan instruksi atau catatan perbaikan..."></textarea>
+            <div class="flex justify-end">
+              <button id="btnSubmitComment" class="bg-slate-900 text-white px-8 py-2 rounded-xl font-bold text-xs uppercase hover:bg-black transition">Kirim Arahan</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-end">
+          <div class="max-w-xs">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 text-center md:text-left">Pengesahan Inspektur</p>
+            <div class="relative border-b-2 border-slate-900 pb-2 mb-4">
+              <canvas id="signature-pad" class="w-full h-32 rounded-lg" width="300" height="150"></canvas>
+              <button id="btnClearSign" class="no-print absolute -top-2 -right-2 bg-white border shadow-sm text-[10px] font-bold px-2 py-1 rounded-md text-red-500 hover:bg-red-50">Reset</button>
+            </div>
+            <p id="inspector-name" class="font-black text-slate-900 uppercase text-center md:text-left">-</p>
+            <p class="text-[10px] font-bold text-blue-600 uppercase tracking-tighter text-center md:text-left">Safety Inspector</p>
+          </div>
+          <div class="hidden md:block text-right">
+            <p class="text-[10px] text-slate-300 italic">E-Report ID: <span id="report-id"></span><br>MiningInspect System v2.0</p>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <div id="modal-closeout" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
-      <h3 class="text-xl font-bold mb-4">Upload Bukti Perbaikan</h3>
-      <input type="file" id="file-perbaikan" class="w-full text-sm border p-2 rounded mb-4" accept="image/*">
-      <textarea id="ket-perbaikan" class="w-full border p-2 rounded h-24 text-sm mb-4" placeholder="Keterangan perbaikan..."></textarea>
-      <div class="flex gap-2">
-        <button onclick="toggleModalClose(false)" class="flex-1 py-2 bg-slate-100 rounded-lg text-xs font-bold">BATAL</button>
-        <button id="btnSimpanCloseOut" class="flex-1 py-2 bg-green-600 text-white rounded-lg text-xs font-bold">SIMPAN PERBAIKAN</button>
+  <div id="modal-closeout" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform transition-all">
+      <h3 class="text-2xl font-black mb-2 text-slate-800">Close-Out Temuan</h3>
+      <p class="text-slate-500 text-sm mb-6">Unggah bukti bahwa temuan ini telah diperbaiki.</p>
+      
+      <div class="space-y-4">
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Foto Bukti Perbaikan</label>
+          <input type="file" id="file-perbaikan" class="w-full text-xs" accept="image/*">
+        </div>
+        <div>
+          <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest text-slate-400">Keterangan Tindakan</label>
+          <textarea id="ket-perbaikan" class="w-full border-slate-200 rounded-xl p-3 text-sm focus:ring-blue-500" rows="3" placeholder="Apa yang sudah diperbaiki?"></textarea>
+        </div>
+        <div class="flex gap-3 pt-2">
+          <button onclick="toggleModalClose(false)" class="flex-1 py-3 bg-slate-100 font-bold rounded-xl text-slate-600 text-xs uppercase tracking-widest">Batal</button>
+          <button id="btnSimpanCloseOut" class="flex-1 py-3 bg-green-600 font-bold rounded-xl text-white text-xs uppercase tracking-widest shadow-lg shadow-green-200 hover:bg-green-700">Submit Perbaikan</button>
+        </div>
       </div>
     </div>
   </div>
