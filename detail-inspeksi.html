@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Detail Inspeksi | MiningInspect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/app.js" defer></script>
+  <script src="js/detail-inspeksi.js" defer></script>
+</head>
+<body class="bg-slate-50">
+  <div id="navbar"></div>
+
+  <div class="app-container">
+    <div class="mb-8 flex justify-between items-end">
+      <div>
+        <a href="dashboard.html" class="text-blue-600 font-bold text-sm hover:underline">← Kembali ke Dashboard</a>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">Detail Laporan</h1>
+      </div>
+      <div id="status-badge"></div>
+    </div>
+
+    <div class="card-pro p-8 mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tanggal</p>
+        <p id="det-tanggal" class="font-bold text-slate-800">-</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lokasi Utama</p>
+        <p id="det-lokasi" class="font-bold text-slate-800">-</p>
+      </div>
+      <div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Area Kerja</p>
+        <p id="det-area" class="font-bold text-slate-800">-</p>
+      </div>
+    </div>
+
+    <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4">Daftar Temuan Keselamatan</h2>
+    <div id="findings-list" class="space-y-6">
+      <div class="p-10 text-center text-slate-400 italic">Memuat data temuan...</div>
+    </div>
+  </div>
+</body>
+</html>
