@@ -7,12 +7,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Tunggu client siap
     const checkClient = setInterval(() => {
         if (window.supabaseClient) {
             clearInterval(checkClient);
             loadDetail(inspectionId);
         }
     }, 100);
+
+    // ✅ EVENT LISTENER TOMBOL PDF
+    document.getElementById('btnDownloadPDF').addEventListener('click', downloadPDF);
 });
 
 async function loadDetail(id) {
@@ -46,7 +50,7 @@ async function loadDetail(id) {
             }
 
             const item = document.createElement('div');
-            item.className = 'card-pro p-8 border-l-8 border-blue-600 mb-6';
+            item.className = 'card-pro p-8 border-l-8 border-blue-600 mb-6 bg-white';
             item.innerHTML = `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
@@ -67,4 +71,19 @@ async function loadDetail(id) {
             list.appendChild(item);
         });
     } catch (e) { alert(e.message); }
+}
+
+// ✅ FUNGSI GENERATE PDF
+function downloadPDF() {
+    const element = document.getElementById('printable-area');
+    const options = {
+        margin:       0.5,
+        filename:     `Laporan-Inspeksi-${new Date().getTime()}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    // Sembunyikan tombol saat proses
+    html2pdf().set(options).from(element).save();
 }
