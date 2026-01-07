@@ -1,3 +1,5 @@
+let canvas, ctx, isDrawing = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const inspectionId = urlParams.get('id');
@@ -11,11 +13,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (window.supabaseClient) {
             clearInterval(checkClient);
             loadDetail(inspectionId);
+            initSignaturePad(); // Inisialisasi tanda tangan
         }
     }, 100);
 
     document.getElementById('btnDownloadPDF').addEventListener('click', downloadPDF);
+    document.getElementById('btnClearSign').addEventListener('click', clearSignature);
 });
+
+function initSignaturePad() {
+    canvas = document.getElementById('signature-pad');
+    ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+
+    const startDrawing = (e) => {
+        isDrawing = true;
+        const pos = getMousePos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    };
+
+    const draw = (e) => {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    };
+
+    const stopDrawing = () => isDrawing = false;
+
+    // Mouse Events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stopDrawing);
+
+    // Touch Events (Mobile)
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startDrawing(e.touches[0]);
+    });
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        draw(e.touches[0]);
+    });
+    canvas.addEventListener('touchend', stopDrawing);
+}
+
+function getMousePos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+        x: (evt.clientX - rect.left) * scaleX,
+        y: (evt.clientY - rect.top) * scaleY
+    };
+}
+
+function clearSignature() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
 
 async function loadDetail(id) {
     try {
@@ -28,6 +85,10 @@ async function loadDetail(id) {
         document.getElementById('det-lokasi').innerText = ins.lokasi_tambang;
         document.getElementById('det-area').innerText = ins.area_kerja || '-';
         
+        // Ambil nama inspektur dari auth session
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        document.getElementById('inspector-name').innerText = user.email.split('@')[0].toUpperCase();
+
         const { data: findings } = await window.supabaseClient.from('inspection_findings').select('*').eq('inspection_id', id);
         const { data: photos } = await window.supabaseClient.from('inspection_photos').select('*').eq('inspection_id', id);
 
@@ -59,22 +120,20 @@ async function loadDetail(id) {
                         <p class="text-slate-600 text-sm mb-4" style="white-space: pre-wrap;">${f.uraian_temuan || ''}</p>
                         <div class="grid grid-cols-2 gap-4 text-sm font-bold">
                             <div>
-                                <p class="text-[10px] text-slate-400 uppercase">Tingkat Risiko</p>
+                                <p class="text-[10px] text-slate-400 uppercase">Risiko</p>
                                 <p class="text-blue-600">${f.tingkat_risiko}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-slate-400 uppercase">Lokasi Spesifik</p>
+                                <p class="text-[10px] text-slate-400 uppercase">Lokasi</p>
                                 <p class="text-slate-800">${f.where_location}</p>
                             </div>
                         </div>
                         <div class="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Rekomendasi Perbaikan:</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Rekomendasi:</p>
                             <p class="text-sm text-slate-700">${f.rekomendasi || '-'}</p>
                         </div>
                     </div>
-                    <div class="flex-1">
-                        ${imgTag || '<div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs italic">Tidak ada foto</div>'}
-                    </div>
+                    <div class="flex-1">${imgTag || '<div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center">N/A</div>'}</div>
                 </div>`;
             list.appendChild(item);
         });
@@ -85,41 +144,27 @@ async function downloadPDF() {
     const element = document.getElementById('printable-area');
     const btn = document.getElementById('btnDownloadPDF');
     
-    // 1. Ambil elemen yang ingin disembunyikan
+    // Sembunyikan elemen UI
     const backBtn = document.querySelector('a[href="dashboard.html"]');
     const statusBadge = document.getElementById('status-badge');
+    const clearSign = document.getElementById('btnClearSign');
     const navbar = document.getElementById('navbar');
 
-    // 2. Sembunyikan elemen sebelum proses PDF
-    if (backBtn) backBtn.style.display = 'none';
-    if (statusBadge) statusBadge.style.display = 'none';
-    if (btn) btn.style.display = 'none';
-    if (navbar) navbar.style.display = 'none';
+    [backBtn, statusBadge, btn, navbar, clearSign].forEach(el => { if(el) el.style.display = 'none'; });
 
     const options = {
-        margin:       [0.5, 0.5],
-        filename:     `Laporan-Inspeksi-${new Date().getTime()}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-            scale: 2, 
-            useCORS: true, 
-            letterRendering: true,
-            scrollY: 0
-        },
-        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        margin: [0.5, 0.5],
+        filename: `LAPORAN_INSPEKSI_${new Date().getTime()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    // 3. Jalankan html2pdf dan gunakan .then() untuk menampilkan kembali elemen
     try {
         await html2pdf().set(options).from(element).save();
-    } catch (error) {
-        console.error("PDF Error:", error);
     } finally {
-        // 4. Tampilkan kembali elemen setelah PDF selesai di-generate
-        if (backBtn) backBtn.style.display = 'block';
-        if (statusBadge) statusBadge.style.display = 'block';
-        if (btn) btn.style.display = 'block';
-        if (navbar) navbar.style.display = 'block';
+        // Tampilkan kembali elemen UI
+        [backBtn, statusBadge, btn, navbar, clearSign].forEach(el => { if(el) el.style.display = 'block'; });
     }
 }
