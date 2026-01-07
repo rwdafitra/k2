@@ -40,7 +40,6 @@ async function loadDetail(id) {
 
             if (photo) {
                 const { data: url } = window.supabaseClient.storage.from('inspeksi_files').getPublicUrl(photo.file_path);
-                // Menggunakan proxy images.weserv.nl untuk stabilitas CORS pada PDF
                 const proxiedUrl = `https://images.weserv.nl/?url=${encodeURIComponent(url.publicUrl)}&w=800`;
                 
                 imgTag = `
@@ -51,7 +50,6 @@ async function loadDetail(id) {
             }
 
             const item = document.createElement('div');
-            // Tambahkan class 'html2pdf__page-break' agar tiap temuan pindah halaman jika ruang tidak cukup
             item.className = 'card-pro p-8 border-l-8 border-blue-600 mb-8 bg-white html2pdf__page-break';
             item.innerHTML = `
                 <div class="flex flex-col md:flex-row gap-8">
@@ -83,14 +81,21 @@ async function loadDetail(id) {
     } catch (e) { console.error(e); }
 }
 
-function downloadPDF() {
+async function downloadPDF() {
     const element = document.getElementById('printable-area');
     const btn = document.getElementById('btnDownloadPDF');
     
-    btn.innerText = "Memproses PDF...";
-    btn.disabled = true;
+    // 1. Ambil elemen yang ingin disembunyikan
+    const backBtn = document.querySelector('a[href="dashboard.html"]');
+    const statusBadge = document.getElementById('status-badge');
+    const navbar = document.getElementById('navbar');
 
-    // Konfigurasi PDF yang lebih optimal
+    // 2. Sembunyikan elemen sebelum proses PDF
+    if (backBtn) backBtn.style.display = 'none';
+    if (statusBadge) statusBadge.style.display = 'none';
+    if (btn) btn.style.display = 'none';
+    if (navbar) navbar.style.display = 'none';
+
     const options = {
         margin:       [0.5, 0.5],
         filename:     `Laporan-Inspeksi-${new Date().getTime()}.pdf`,
@@ -102,12 +107,19 @@ function downloadPDF() {
             scrollY: 0
         },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-        // Memaksa pemutusan halaman otomatis pada elemen temuan
         pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    html2pdf().set(options).from(element).save().then(() => {
-        btn.innerText = "Cetak PDF";
-        btn.disabled = false;
-    });
+    // 3. Jalankan html2pdf dan gunakan .then() untuk menampilkan kembali elemen
+    try {
+        await html2pdf().set(options).from(element).save();
+    } catch (error) {
+        console.error("PDF Error:", error);
+    } finally {
+        // 4. Tampilkan kembali elemen setelah PDF selesai di-generate
+        if (backBtn) backBtn.style.display = 'block';
+        if (statusBadge) statusBadge.style.display = 'block';
+        if (btn) btn.style.display = 'block';
+        if (navbar) navbar.style.display = 'block';
+    }
 }
