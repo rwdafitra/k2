@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Tunggu client siap
     const checkClient = setInterval(() => {
         if (window.supabaseClient) {
             clearInterval(checkClient);
@@ -15,7 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 100);
 
-    // ✅ EVENT LISTENER TOMBOL PDF
     document.getElementById('btnDownloadPDF').addEventListener('click', downloadPDF);
 });
 
@@ -38,52 +36,78 @@ async function loadDetail(id) {
 
         findings.forEach((f, i) => {
             const photo = photos?.find(p => p.finding_id === f.id);
-            let imgTag = '<div class="mt-4 p-4 bg-slate-100 rounded-lg text-xs text-slate-400 italic text-center">Tidak ada lampiran foto</div>';
+            let imgTag = '';
 
             if (photo) {
                 const { data: url } = window.supabaseClient.storage.from('inspeksi_files').getPublicUrl(photo.file_path);
+                // Menggunakan proxy images.weserv.nl untuk stabilitas CORS pada PDF
+                const proxiedUrl = `https://images.weserv.nl/?url=${encodeURIComponent(url.publicUrl)}&w=800`;
+                
                 imgTag = `
                     <div class="mt-4">
                         <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Bukti Foto</p>
-                        <img src="${url.publicUrl}" class="rounded-xl border w-full max-h-80 object-cover shadow-sm">
+                        <img src="${proxiedUrl}" crossOrigin="anonymous" class="rounded-xl border w-full h-64 object-cover shadow-sm">
                     </div>`;
             }
 
             const item = document.createElement('div');
-            item.className = 'card-pro p-8 border-l-8 border-blue-600 mb-6 bg-white';
+            // Tambahkan class 'html2pdf__page-break' agar tiap temuan pindah halaman jika ruang tidak cukup
+            item.className = 'card-pro p-8 border-l-8 border-blue-600 mb-8 bg-white html2pdf__page-break';
             item.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1">
                         <span class="text-[10px] font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase">Temuan #${i + 1}</span>
                         <h3 class="text-xl font-extrabold text-slate-900 mt-4 mb-2">${f.what}</h3>
-                        <p class="text-slate-600 text-sm mb-4">${f.uraian_temuan || ''}</p>
+                        <p class="text-slate-600 text-sm mb-4" style="white-space: pre-wrap;">${f.uraian_temuan || ''}</p>
                         <div class="grid grid-cols-2 gap-4 text-sm font-bold">
-                            <p class="text-blue-600 uppercase text-[10px]">Risiko: ${f.tingkat_risiko}</p>
-                            <p class="text-slate-500 uppercase text-[10px]">Lokasi: ${f.where_location}</p>
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase">Tingkat Risiko</p>
+                                <p class="text-blue-600">${f.tingkat_risiko}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase">Lokasi Spesifik</p>
+                                <p class="text-slate-800">${f.where_location}</p>
+                            </div>
                         </div>
                         <div class="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Rekomendasi:</p>
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Rekomendasi Perbaikan:</p>
                             <p class="text-sm text-slate-700">${f.rekomendasi || '-'}</p>
                         </div>
                     </div>
-                    ${imgTag}
+                    <div class="flex-1">
+                        ${imgTag || '<div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs italic">Tidak ada foto</div>'}
+                    </div>
                 </div>`;
             list.appendChild(item);
         });
-    } catch (e) { alert(e.message); }
+    } catch (e) { console.error(e); }
 }
 
-// ✅ FUNGSI GENERATE PDF
 function downloadPDF() {
     const element = document.getElementById('printable-area');
+    const btn = document.getElementById('btnDownloadPDF');
+    
+    btn.innerText = "Memproses PDF...";
+    btn.disabled = true;
+
+    // Konfigurasi PDF yang lebih optimal
     const options = {
-        margin:       0.5,
+        margin:       [0.5, 0.5],
         filename:     `Laporan-Inspeksi-${new Date().getTime()}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true,
+            scrollY: 0
+        },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+        // Memaksa pemutusan halaman otomatis pada elemen temuan
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
-    // Sembunyikan tombol saat proses
-    html2pdf().set(options).from(element).save();
+    html2pdf().set(options).from(element).save().then(() => {
+        btn.innerText = "Cetak PDF";
+        btn.disabled = false;
+    });
 }
