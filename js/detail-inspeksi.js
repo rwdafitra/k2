@@ -4,11 +4,7 @@ let activeFindingId = null;
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const inspectionId = urlParams.get('id');
-
-    if (!inspectionId) {
-        window.location.href = 'dashboard.html';
-        return;
-    }
+    if (!inspectionId) return window.location.href = 'dashboard.html';
 
     const checkClient = setInterval(() => {
         if (window.supabaseClient) {
@@ -18,187 +14,133 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 100);
 
-    document.getElementById('btnDownloadPDF').addEventListener('click', downloadPDF);
-    document.getElementById('btnClearSign').addEventListener('click', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
-    document.getElementById('btnSimpanCloseOut').addEventListener('click', processCloseOut);
+    document.getElementById('btnDownloadPDF').onclick = downloadPDF;
+    document.getElementById('btnClearSign').onclick = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('btnSubmitComment').onclick = postComment;
+    document.getElementById('btnSimpanCloseOut').onclick = processCloseOut;
 });
 
 function initSignaturePad() {
     canvas = document.getElementById('signature-pad');
     ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 2;
-
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
     const getPos = (e) => {
         const rect = canvas.getBoundingClientRect();
         const clientX = e.clientX || e.touches[0].clientX;
         const clientY = e.clientY || e.touches[0].clientY;
-        return {
-            x: (clientX - rect.left) * (canvas.width / rect.width),
-            y: (clientY - rect.top) * (canvas.height / rect.height)
-        };
+        return { x: (clientX - rect.left) * (canvas.width / rect.width), y: (clientY - rect.top) * (canvas.height / rect.height) };
     };
-
-    const start = (e) => { isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); };
-    const move = (e) => { if(!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-    const stop = () => isDrawing = false;
-
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', move);
-    window.addEventListener('mouseup', stop);
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); });
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); });
-    canvas.addEventListener('touchend', stop);
+    canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('mousemove', (e) => { if(!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+    window.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); isDrawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if(!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+    canvas.addEventListener('touchend', () => isDrawing = false);
 }
 
 async function loadDetail(id) {
     try {
-        const { data: ins, error: insErr } = await window.supabaseClient
-            .from('inspections').select('*').eq('id', id).single();
-        if (insErr) throw insErr;
-
-        // Setup Header & Tanda Tangan
-        document.getElementById('det-tanggal').innerText = new Date(ins.tanggal_inspeksi).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-        document.getElementById('det-lokasi').innerText = ins.lokasi_tambang;
-        document.getElementById('det-area').innerText = ins.area_kerja || '-';
-        
-        const { data: { user } } = await window.supabaseClient.auth.getUser();
-        document.getElementById('inspector-name').innerText = user.email.split('@')[0].toUpperCase();
-
-        // Setup Komentar Section
-        setupComments(ins);
-
-        // Render Findings
+        const { data: ins } = await window.supabaseClient.from('inspections').select('*').eq('id', id).single();
         const { data: findings } = await window.supabaseClient.from('inspection_findings').select('*').eq('inspection_id', id);
         const { data: photos } = await window.supabaseClient.from('inspection_photos').select('*').eq('inspection_id', id);
 
-        const list = document.getElementById('findings-list');
-        list.innerHTML = '';
+        document.getElementById('det-tanggal').innerText = new Date(ins.tanggal_inspeksi).toLocaleDateString('id-ID');
+        document.getElementById('det-lokasi').innerText = ins.lokasi_tambang;
+        document.getElementById('det-area').innerText = ins.area_kerja || '-';
 
-        findings.forEach((f, i) => {
-            const photo = photos?.find(p => p.finding_id === f.id);
-            let imgHtml = '';
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        document.getElementById('inspector-name').innerText = user.email.split('@')[0].toUpperCase();
 
-            if (photo) {
-                const { data: url } = window.supabaseClient.storage.from('inspeksi_files').getPublicUrl(photo.file_path);
-                const proxiedUrl = `https://images.weserv.nl/?url=${encodeURIComponent(url.publicUrl)}&w=800`;
-                imgHtml = `<img src="${proxiedUrl}" crossOrigin="anonymous" class="rounded-xl border w-full h-64 object-cover shadow-sm">`;
-            }
+        // Admin UI
+        if (['KTT', 'AMN', 'SHE'].includes(window.userRole)) {
+            document.getElementById('admin-comment-form').classList.remove('hidden');
+            document.getElementById('label-role').innerText = window.userRole;
+        }
 
-            // Bukti Perbaikan Section
-            let perbaikanHtml = '';
-            if (f.status === 'CLOSED' && f.bukti_perbaikan_path) {
-                const { data: pbUrl } = window.supabaseClient.storage.from('inspeksi_files').getPublicUrl(f.bukti_perbaikan_path);
-                perbaikanHtml = `
-                    <div class="mt-6 p-4 bg-green-50 rounded-xl border border-green-200">
-                        <p class="text-[10px] font-black text-green-600 uppercase mb-2 tracking-widest">Bukti Perbaikan (Closed Out)</p>
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <img src="https://images.weserv.nl/?url=${encodeURIComponent(pbUrl.publicUrl)}&w=400" crossOrigin="anonymous" class="w-full md:w-32 h-32 object-cover rounded-lg">
-                            <p class="text-xs text-slate-700 italic">"${f.keterangan_perbaikan}"</p>
-                        </div>
-                    </div>`;
-            } else if (window.userRole === 'INSPECTOR') {
-                perbaikanHtml = `<button onclick="openCloseOut('${f.id}')" class="no-print mt-4 w-full py-2 bg-green-600 text-white text-xs font-bold rounded-lg uppercase">Tindak Lanjut / Close Out</button>`;
-            }
-
-            const item = document.createElement('div');
-            item.className = 'card-pro p-8 border-l-8 border-blue-600 mb-8 bg-white html2pdf__page-break';
-            item.innerHTML = `
-                <div class="flex flex-col md:flex-row gap-8">
-                    <div class="flex-1">
-                        <span class="text-[10px] font-bold bg-blue-50 text-blue-600 px-3 py-1 rounded-full">TEMUAN #${i + 1}</span>
-                        <h3 class="text-xl font-extrabold text-slate-900 mt-4 mb-2">${f.what}</h3>
-                        <p class="text-slate-600 text-sm mb-4">${f.uraian_temuan || ''}</p>
-                        <div class="grid grid-cols-2 gap-4 text-sm font-bold uppercase text-[10px]">
-                            <p class="text-blue-600">Risiko: ${f.tingkat_risiko}</p>
-                            <p class="text-slate-500">Lokasi: ${f.where_location}</p>
-                        </div>
-                        <div class="mt-4 p-3 bg-slate-50 rounded-lg border">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Rekomendasi:</p>
-                            <p class="text-sm text-slate-700">${f.rekomendasi || '-'}</p>
-                        </div>
-                        ${perbaikanHtml}
-                    </div>
-                    <div class="flex-1">${imgHtml || '<div class="h-64 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 text-xs italic">Tidak ada foto bukti</div>'}</div>
-                </div>`;
-            list.appendChild(item);
-        });
+        renderFindings(findings, photos);
+        loadComments(id);
     } catch (e) { console.error(e); }
 }
 
-function setupComments(ins) {
-    const role = window.userRole;
-    document.getElementById('display-she').innerText = ins.komentar_she || "Belum ada komentar.";
-    document.getElementById('display-amn').innerText = ins.komentar_amn || "Belum ada komentar.";
-    document.getElementById('display-ktt').innerText = ins.komentar_ktt || "Belum ada komentar.";
+function renderFindings(findings, photos) {
+    const list = document.getElementById('findings-list');
+    list.innerHTML = '';
+    findings.forEach((f, i) => {
+        const photo = photos?.find(p => p.finding_id === f.id);
+        const { data: url } = photo ? window.supabaseClient.storage.from('inspeksi_files').getPublicUrl(photo.file_path) : { data: null };
+        const proxied = url ? `https://images.weserv.nl/?url=${encodeURIComponent(url.publicUrl)}&w=600` : '';
 
-    if (role === 'SHE') document.getElementById('input-she').classList.remove('hidden');
-    if (role === 'AMN') document.getElementById('input-amn').classList.remove('hidden');
-    if (role === 'KTT') document.getElementById('input-ktt').classList.remove('hidden');
+        let actionHtml = (f.status === 'OPEN' && window.userRole === 'INSPECTOR') 
+            ? `<button onclick="openCloseOut('${f.id}')" class="no-print mt-4 w-full py-2 bg-green-600 text-white rounded text-[10px] font-bold">CLOSE TEMUAN</button>` : '';
+        
+        if (f.status === 'CLOSED') {
+            const { data: pbUrl } = window.supabaseClient.storage.from('inspeksi_files').getPublicUrl(f.bukti_perbaikan_path);
+            actionHtml = `<div class="mt-4 p-3 bg-green-50 rounded border border-green-200">
+                <p class="text-[9px] font-bold text-green-600 uppercase">Perbaikan Selesai:</p>
+                <img src="https://images.weserv.nl/?url=${encodeURIComponent(pbUrl.publicUrl)}&w=200" class="w-20 h-20 object-cover mt-1 rounded">
+                <p class="text-[10px] italic mt-1">${f.keterangan_perbaikan}</p>
+            </div>`;
+        }
+
+        list.innerHTML += `
+            <div class="p-6 border-l-4 border-blue-500 bg-white shadow-sm flex flex-col md:flex-row gap-6 html2pdf__page-break">
+                <div class="flex-1">
+                    <span class="text-[9px] font-bold text-blue-500 uppercase">Temuan #${i+1}</span>
+                    <h3 class="font-bold text-lg mb-2">${f.what}</h3>
+                    <p class="text-xs text-slate-500 mb-4">${f.uraian_temuan || ''}</p>
+                    <p class="text-[9px] font-bold">RISIKO: ${f.tingkat_risiko} | LOKASI: ${f.where_location}</p>
+                    ${actionHtml}
+                </div>
+                <div class="w-full md:w-64 h-48 bg-slate-100 rounded overflow-hidden">
+                    ${proxied ? `<img src="${proxied}" crossOrigin="anonymous" class="w-full h-full object-cover">` : ''}
+                </div>
+            </div>`;
+    });
 }
 
-async function saveComment(type) {
-    const text = document.getElementById(`text-${type}`).value;
+async function loadComments(id) {
+    const thread = document.getElementById('comments-thread');
+    const { data } = await window.supabaseClient.from('inspection_comments').select('*').eq('inspection_id', id).order('created_at', { ascending: true });
+    if (data?.length > 0) thread.innerHTML = '';
+    data?.forEach(c => {
+        const colors = { KTT: 'bg-red-50 text-red-700', AMN: 'bg-green-50 text-green-700', SHE: 'bg-blue-50 text-blue-700' };
+        thread.innerHTML += `<div class="${colors[c.user_role] || 'bg-slate-50'} p-3 rounded-xl border border-white">
+            <p class="text-[9px] font-black uppercase mb-1">${c.user_role} - ${c.user_name}</p>
+            <p class="text-xs font-medium">${c.comment_text}</p>
+        </div>`;
+    });
+}
+
+async function postComment() {
+    const txt = document.getElementById('input-comment-text').value;
     const id = new URLSearchParams(window.location.search).get('id');
-    const update = {}; update[`komentar_${type}`] = text;
-
-    const { error } = await window.supabaseClient.from('inspections').update(update).eq('id', id);
-    if (error) alert(error.message); else location.reload();
+    if (!txt.trim()) return;
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    await window.supabaseClient.from('inspection_comments').insert({
+        inspection_id: id, user_id: user.id, user_role: window.userRole,
+        user_name: user.email.split('@')[0].toUpperCase(), comment_text: txt
+    });
+    location.reload();
 }
 
-function openCloseOut(findingId) {
-    activeFindingId = findingId;
-    document.getElementById('modal-closeout').classList.remove('hidden');
-}
-
-function toggleModalClose(show) {
-    document.getElementById('modal-closeout').classList.toggle('hidden', !show);
-}
+function openCloseOut(id) { activeFindingId = id; document.getElementById('modal-closeout').classList.remove('hidden'); }
+function toggleModalClose(s) { document.getElementById('modal-closeout').classList.toggle('hidden', !s); }
 
 async function processCloseOut() {
-    const file = document.getElementById('file-perbaikan').files[0];
-    const ket = document.getElementById('ket-perbaikan').value;
-    if (!file || !ket) return alert("Lengkapi foto bukti dan keterangan!");
-
-    const btn = document.getElementById('btnSimpanCloseOut');
-    btn.disabled = true; btn.innerText = "SEDANG MEMPROSES...";
-
-    try {
-        const { data: { user } } = await window.supabaseClient.auth.getUser();
-        const path = `perbaikan/${user.id}/${Date.now()}-${file.name}`;
-        
-        const { error: upErr } = await window.supabaseClient.storage.from('inspeksi_files').upload(path, file);
-        if (upErr) throw upErr;
-
-        const { error: dbErr } = await window.supabaseClient.from('inspection_findings').update({
-            status: 'CLOSED',
-            bukti_perbaikan_path: path,
-            keterangan_perbaikan: ket,
-            tanggal_perbaikan: new Date()
-        }).eq('id', activeFindingId);
-
-        if (dbErr) throw dbErr;
-        alert("Temuan berhasil ditutup (Closed Out)!");
-        location.reload();
-    } catch (e) { alert(e.message); btn.disabled = false; btn.innerText = "Simpan Perbaikan"; }
+    const f = document.getElementById('file-perbaikan').files[0];
+    const k = document.getElementById('ket-perbaikan').value;
+    if (!f || !k) return alert("Lengkapi data!");
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    const path = `perbaikan/${Date.now()}-${f.name}`;
+    await window.supabaseClient.storage.from('inspeksi_files').upload(path, f);
+    await window.supabaseClient.from('inspection_findings').update({ status: 'CLOSED', bukti_perbaikan_path: path, keterangan_perbaikan: k, tanggal_perbaikan: new Date() }).eq('id', activeFindingId);
+    location.reload();
 }
 
 async function downloadPDF() {
-    const element = document.getElementById('printable-area');
-    const btn = document.getElementById('btnDownloadPDF');
-    const toHide = [document.querySelector('a[href="dashboard.html"]'), document.getElementById('status-badge'), btn, document.getElementById('navbar'), document.getElementById('btnClearSign'), document.querySelectorAll('.no-print')];
-
-    toHide.flat().forEach(el => { if(el) el.style.display = 'none'; });
-
-    const options = {
-        margin: [0.5, 0.5],
-        filename: `LAPORAN_INSPEKSI_${new Date().getTime()}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-    };
-
-    try { await html2pdf().set(options).from(element).save(); } 
-    finally { toHide.flat().forEach(el => { if(el) el.style.display = ''; }); }
+    const el = document.getElementById('printable-area');
+    const toHide = document.querySelectorAll('.no-print');
+    toHide.forEach(h => h.style.display = 'none');
+    await html2pdf().set({ margin: 0.5, filename: 'Laporan.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { format: 'a4' } }).from(el).save();
+    toHide.forEach(h => h.style.display = '');
 }
