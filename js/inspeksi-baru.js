@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnAdd) btnAdd.addEventListener('click', addFinding);
     if (btnSubmit) btnSubmit.addEventListener('click', submitInspection);
 
-    addFinding(); // Tambah form pertama otomatis
+    addFinding(); 
 });
 
 function addFinding() {
@@ -63,7 +63,10 @@ async function submitInspection() {
 
         if (!tanggal_inspeksi || !lokasi_tambang) throw new Error("Lengkapi data utama!");
 
-        // 1. Simpan Header Inspeksi (Sesuai RLS inspections_self_insert)
+        // Ambil temuan pertama untuk mengisi kolom 'uraian_temuan' di tabel inspections (jika memang dipaksa NOT NULL)
+        const firstFindingText = document.querySelector('.what-input')?.value || "Laporan Inspeksi";
+
+        // 1. Simpan Header Inspeksi
         const { data: inspection, error: insError } = await window.supabaseClient
             .from('inspections')
             .insert({
@@ -71,12 +74,13 @@ async function submitInspection() {
                 lokasi_tambang,
                 area_kerja,
                 inspector_id: user.id,
-                status: 'DRAFT'
+                status: 'DRAFT',
+                uraian_temuan: firstFindingText // <--- Menambah kolom ini untuk mengatasi error NOT NULL
             }).select().single();
 
         if (insError) throw insError;
 
-        // 2. Simpan Temuan & Foto
+        // 2. Simpan Semua Kartu Temuan
         const cards = document.querySelectorAll('.finding-card');
         for (const card of cards) {
             const what = card.querySelector('.what-input').value;
@@ -87,7 +91,7 @@ async function submitInspection() {
                 .insert({
                     inspection_id: inspection.id,
                     what: what,
-                    uraian_temuan: what,
+                    uraian_temuan: what, // Di tabel findings kolom ini juga biasanya wajib
                     tingkat_risiko: card.querySelector('.risiko-input').value,
                     rekomendasi: card.querySelector('.rekomendasi-input').value,
                     where_location: card.querySelector('.where-input').value || lokasi_tambang,
@@ -96,10 +100,10 @@ async function submitInspection() {
 
             if (fError) throw fError;
 
-            // Proses Upload Foto (Sesuai RLS photos_inspector_insert)
+            // 3. Upload Foto
             const file = card.querySelector('.file-input').files[0];
             if (file) {
-                const fileName = `${Date.now()}-${file.name}`;
+                const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
                 const filePath = `inspeksi/${user.id}/${fileName}`;
                 
                 const { error: upErr } = await window.supabaseClient.storage
@@ -119,7 +123,8 @@ async function submitInspection() {
         alert("Berhasil disimpan!");
         window.location.href = 'dashboard.html';
     } catch (err) {
-        alert("Gagal: " + err.message);
+        console.error("Full Error:", err);
+        alert("Gagal: " + (err.message || "Kesalahan tidak diketahui"));
     } finally {
         btn.disabled = false;
         btn.innerText = "SIMPAN SEMUA DATA";
