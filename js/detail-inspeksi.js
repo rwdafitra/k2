@@ -50,6 +50,18 @@ async function initApp(id) {
 }
 
 /**
+ * Fungsi untuk membuat nomor dokumen otomatis: INS/XXX/Bulan/Tahun
+ */
+function generateDocNumber(id, dateString) {
+    const date = new Date(dateString);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    // Mengambil 3 karakter pertama dari ID sebagai nomor unik
+    const shortId = id.substring(0, 3).toUpperCase(); 
+    return `INS/${shortId}/${month}/${year}`;
+}
+
+/**
  * Mengambil dan Menampilkan Data Inspeksi
  */
 async function loadDetailData(id) {
@@ -63,8 +75,8 @@ async function loadDetailData(id) {
 
         if (insErr) throw insErr;
 
-        // 2. Isi Header Laporan
-        document.getElementById('report-id').innerText = ins.id.substring(0, 8).toUpperCase();
+        // 2. Isi Header Laporan (Dengan Penomoran Baru)
+        document.getElementById('report-id').innerText = generateDocNumber(ins.id, ins.tanggal_inspeksi);
         document.getElementById('det-tanggal').innerText = new Date(ins.tanggal_inspeksi)
             .toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
         document.getElementById('det-lokasi').innerText = ins.lokasi_tambang;
@@ -98,7 +110,7 @@ async function loadDetailData(id) {
 }
 
 /**
- * Render Tabel Temuan (Style DOCX)
+ * Render Tabel Temuan (Tanpa Kolom Lokasi di baris temuan)
  */
 function renderFindingsTable(findings) {
     const tbody = document.getElementById('findings-table-body');
@@ -108,11 +120,11 @@ function renderFindingsTable(findings) {
         let actionContent = '';
         
         if (f.status === 'CLOSED') {
-            actionContent = `<div class="mt-2 p-2 bg-green-50 text-green-700 text-[10px] rounded border border-green-200">
+            actionContent = `<div class="mt-2 p-2 bg-green-50 text-green-700 text-[9px] rounded border border-green-200">
                                 <b>VERIFIED CLOSED:</b><br>${f.keterangan_perbaikan}
                              </div>`;
         } else if (window.userRole === 'INSPECTOR') {
-            actionContent = `<button onclick="openCloseOut('${f.id}')" class="no-print mt-2 block w-full text-[9px] bg-blue-600 text-white px-2 py-1.5 rounded font-bold hover:bg-blue-700 transition">
+            actionContent = `<button onclick="openCloseOut('${f.id}')" class="no-print mt-2 block w-full text-[8px] bg-blue-600 text-white px-2 py-1.5 rounded font-bold hover:bg-blue-700 transition">
                                 UPDATE PERBAIKAN
                              </button>`;
         }
@@ -122,8 +134,7 @@ function renderFindingsTable(findings) {
                 <td class="text-center font-bold text-xs p-3 border">${i + 1}</td>
                 <td class="text-xs p-3 border">
                     <p class="font-bold text-slate-800">${f.what}</p>
-                    <p class="text-slate-500 mt-1">${f.uraian_temuan || ''}</p>
-                    <p class="text-[10px] mt-2 font-bold text-blue-600">LOKASI: ${f.where_location}</p>
+                    <p class="text-slate-500 mt-1 leading-relaxed">${f.uraian_temuan || ''}</p>
                 </td>
                 <td class="text-center p-3 border">
                     <span class="text-[9px] font-black border px-2 py-1 rounded ${f.tingkat_risiko === 'HIGH' ? 'border-red-500 text-red-500' : 'border-amber-500 text-amber-500'}">
@@ -131,7 +142,7 @@ function renderFindingsTable(findings) {
                     </span>
                 </td>
                 <td class="text-xs p-3 border">
-                    <p class="font-medium text-slate-700">${f.rekomendasi || 'Segera lakukan perbaikan sesuai standar.'}</p>
+                    <p class="font-medium text-slate-700 italic">${f.rekomendasi || 'Harap segera lakukan perbaikan.'}</p>
                     ${actionContent}
                 </td>
             </tr>`;
@@ -139,7 +150,7 @@ function renderFindingsTable(findings) {
 }
 
 /**
- * Render Lampiran Foto
+ * Render Lampiran Foto (Grid Dokumentasi)
  */
 function renderPhotosGrid(photos, findings) {
     const pGrid = document.getElementById('photos-grid');
@@ -152,12 +163,12 @@ function renderPhotosGrid(photos, findings) {
 
     photos.forEach(p => {
         const { data: url } = window.supabaseClient.storage.from('inspeksi_files').getPublicUrl(p.file_path);
-        const findWhat = findings.find(f => f.id === p.finding_id)?.what || 'Foto Temuan';
+        const findWhat = findings.find(f => f.id === p.finding_id)?.what || 'Dokumentasi';
 
         pGrid.innerHTML += `
-            <div class="border p-3 rounded-xl bg-white shadow-sm">
+            <div class="border border-black p-2 bg-white shadow-sm">
                 <img src="https://images.weserv.nl/?url=${encodeURIComponent(url.publicUrl)}&w=500" 
-                     class="w-full h-52 object-cover rounded-lg mb-3 border border-slate-100" 
+                     class="w-full h-52 object-cover border border-slate-100 mb-2" 
                      crossOrigin="anonymous">
                 <p class="text-[10px] text-center font-bold text-slate-600 uppercase tracking-tight">${findWhat}</p>
             </div>`;
@@ -181,12 +192,12 @@ function renderCommentsThread(comments) {
         const style = styles[c.user_role] || 'bg-slate-50 border-slate-200 text-slate-700';
 
         thread.innerHTML += `
-            <div class="${style} p-4 rounded-xl border text-xs shadow-sm">
+            <div class="${style} p-3 rounded-lg border text-[10px] shadow-sm">
                 <div class="flex justify-between mb-1 opacity-70">
                     <span class="font-black">${c.user_role} - ${c.user_name}</span>
                     <span>${new Date(c.created_at).toLocaleString('id-ID')}</span>
                 </div>
-                <p class="font-bold italic">"${c.comment_text}"</p>
+                <p class="font-bold">"${c.comment_text}"</p>
             </div>`;
     });
 }
@@ -218,7 +229,7 @@ async function postManagementComment() {
     } catch (e) {
         alert(e.message);
         btn.disabled = false;
-        btn.innerText = "Submit Arahan";
+        btn.innerText = "Kirim Arahan";
     }
 }
 
@@ -230,8 +241,8 @@ function initSignaturePad() {
     if (!canvas) return;
     
     ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#0f172a';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
     ctx.lineCap = 'round';
 
     const getPos = (e) => {
@@ -308,7 +319,7 @@ async function downloadPDF() {
     const btn = document.getElementById('btnDownloadPDF');
     const originalText = btn.innerText;
     
-    btn.innerText = "MENYIAPKAN...";
+    btn.innerText = "PROSES...";
     
     const options = {
         margin: [0.3, 0.3, 0.3, 0.3],

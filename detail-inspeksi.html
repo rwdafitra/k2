@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Laporan Inspeksi Tambang | MiningInspect</title>
+  <title>Laporan Inspeksi Tambang | JPC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/app.css">
@@ -11,131 +11,135 @@
   <script src="js/app.js" defer></script>
   <script src="js/detail-inspeksi.js" defer></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap');
-    body { font-family: 'Roboto', sans-serif; background-color: #f8fafc; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
     
-    /* Document Style */
-    .doc-page { background: white; width: 100%; max-width: 900px; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-    .doc-header-table td { border: 1px solid #000; padding: 8px; vertical-align: middle; }
-    .doc-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    .doc-table th, .doc-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
-    .doc-table th { background-color: #f1f5f9; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; color: #475569; }
+    .doc-page { background: white; width: 100%; max-width: 850px; margin: 0 auto; padding: 40px; }
     
-    #signature-pad { border: 1px solid #cbd5e1; background: #fff; cursor: crosshair; touch-action: none; }
+    /* KOP Lebih Ringkas */
+    .doc-header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    .doc-header-table td { border: 1px solid #000; padding: 5px 10px; vertical-align: middle; }
+    .logo-box { width: 100px; text-align: center; font-weight: 800; font-size: 1.2rem; line-height: 1; }
+    .title-box { text-align: center; font-weight: 700; text-transform: uppercase; font-size: 1rem; }
+    .info-box { width: 220px; font-size: 9px; line-height: 1.4; }
+
+    /* Tabel Formal */
+    .doc-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .doc-table th, .doc-table td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 11px; }
+    .doc-table th { background-color: #f8fafc; text-transform: uppercase; font-weight: 700; }
+    
+    #signature-pad { border: 1px solid #e2e8f0; background: #fff; touch-action: none; }
     
     @media print {
-      body { background: white; }
+      body { background: white; padding: 0; }
       .no-print { display: none !important; }
-      .doc-page { box-shadow: none; width: 100%; max-width: 100%; }
+      .doc-page { box-shadow: none; padding: 20px; }
     }
   </style>
 </head>
-<body class="p-0 md:p-8">
+<body>
 
-  <div class="max-w-4xl mx-auto mb-6 no-print flex justify-between items-center px-4">
+  <div class="max-w-3xl mx-auto my-6 no-print flex justify-between items-center px-4">
     <a href="dashboard.html" class="text-blue-600 font-bold flex items-center gap-2">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Dashboard
+      Kembali
     </a>
-    <button id="btnDownloadPDF" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold shadow-lg transition">
-      Cetak ke PDF
-    </button>
+    <button id="btnDownloadPDF" class="bg-slate-900 text-white px-6 py-2 rounded-lg font-bold shadow-md hover:bg-black transition">Cetak PDF</button>
   </div>
 
-  <div id="printable-area" class="doc-page p-8 md:p-12 min-h-screen">
+  <div id="printable-area" class="doc-page">
     
-    <table class="doc-header-table w-full mb-8">
+    <table class="doc-header-table">
       <tr>
-        <td rowspan="3" width="20%" class="text-center font-black text-2xl tracking-tighter">
-          <span class="text-blue-600">JPC</span><br><span class="text-xs font-normal">MINING</span>
+        <td rowspan="3" class="logo-box">
+          <span class="text-blue-600">JPC</span><br><span class="text-[8px] font-normal tracking-widest">MINING</span>
         </td>
-        <td rowspan="3" width="40%" class="text-center font-bold text-xl uppercase tracking-widest">Laporan Inspeksi</td>
-        <td width="40%" class="text-[10px]">Form No: <b>003/F/ENG/JPC/VIII/2021</b></td>
+        <td rowspan="3" class="title-box">Laporan Hasil Inspeksi</td>
+        <td class="info-box">Form No: <b>001/F/SHE/JPC/I/2026</b></td>
       </tr>
-      <tr><td class="text-[10px]">Revisi: <b>1</b></td></tr>
-      <tr><td class="text-[10px]">Tanggal Efektif: <b>1 Agustus 2021</b></td></tr>
+      <tr><td class="info-box">Revisi: <b>0</b></td></tr>
+      <tr><td class="info-box">Tanggal Efektif: <b>01 Januari 2026</b></td></tr>
     </table>
 
-    <div class="grid grid-cols-2 gap-x-12 gap-y-4 mb-8 text-sm">
-      <div class="flex justify-between border-b border-slate-100 pb-1">
-        <span class="text-slate-400">Nomor Inspeksi:</span>
-        <span id="report-id" class="font-bold">-</span>
+    <div class="grid grid-cols-2 gap-4 mb-6 text-[11px] bg-slate-50 p-4 border border-black">
+      <div class="flex flex-col">
+        <span class="text-slate-500 uppercase font-bold text-[9px]">Nomor Dokumen</span>
+        <span id="report-id" class="font-bold text-sm text-blue-700">-</span>
       </div>
-      <div class="flex justify-between border-b border-slate-100 pb-1">
-        <span class="text-slate-400">Tanggal:</span>
-        <span id="det-tanggal" class="font-bold">-</span>
+      <div class="flex flex-col">
+        <span class="text-slate-500 uppercase font-bold text-[9px]">Tanggal Inspeksi</span>
+        <span id="det-tanggal" class="font-bold text-sm text-slate-800">-</span>
       </div>
-      <div class="flex justify-between border-b border-slate-100 pb-1">
-        <span class="text-slate-400">Lokasi:</span>
-        <span id="det-lokasi" class="font-bold">-</span>
+      <div class="flex flex-col">
+        <span class="text-slate-500 uppercase font-bold text-[9px]">Lokasi Tambang</span>
+        <span id="det-lokasi" class="font-bold text-sm text-slate-800">-</span>
       </div>
-      <div class="flex justify-between border-b border-slate-100 pb-1">
-        <span class="text-slate-400">Area Kerja:</span>
-        <span id="det-area" class="font-bold">-</span>
+      <div class="flex flex-col">
+        <span class="text-slate-500 uppercase font-bold text-[9px]">Area Kerja Spesifik</span>
+        <span id="det-area" class="font-bold text-sm text-slate-800">-</span>
       </div>
     </div>
 
-    <table class="doc-table mb-10">
+    <table class="doc-table">
       <thead>
         <tr>
-          <th width="5%">No</th>
-          <th width="40%">Uraian Temuan (What & Where)</th>
-          <th width="15%">Risiko</th>
-          <th width="40%">Tindakan Perbaikan / Rekomendasi</th>
+          <th width="5%" class="text-center">No</th>
+          <th width="45%">Uraian Temuan (What)</th>
+          <th width="10%" class="text-center">Risiko</th>
+          <th width="40%">Tindakan / Rekomendasi Perbaikan</th>
         </tr>
       </thead>
-      <tbody id="findings-table-body">
-        </tbody>
+      <tbody id="findings-table-body"></tbody>
     </table>
+
+    <div class="mt-8">
+      <h3 class="text-[10px] font-black uppercase mb-2 border-b border-black pb-1">Arahan & Catatan Manajemen (KTT/AMN/SHE)</h3>
+      <div id="comments-thread" class="space-y-2 mb-4">
+        <p class="text-[10px] text-slate-400 italic">Belum ada arahan manajemen.</p>
+      </div>
+      
+      <div id="admin-comment-form" class="hidden no-print bg-blue-50 p-4 rounded-lg border border-blue-200">
+        <label class="text-[9px] font-bold text-blue-700 block mb-1 uppercase">Input Arahan Sebagai: <span id="label-role"></span></label>
+        <textarea id="input-comment-text" class="w-full border rounded p-2 text-xs mb-2" rows="2" placeholder="Tulis instruksi..."></textarea>
+        <button id="btnSubmitComment" class="bg-blue-600 text-white px-4 py-1.5 rounded font-bold text-[10px] uppercase">Kirim</button>
+      </div>
+    </div>
+
+    <div class="mt-12 grid grid-cols-2 gap-10">
+      <div class="text-center">
+        <p class="text-[10px] uppercase font-bold mb-10 text-slate-500">Dibuat Oleh,</p>
+        <div class="relative inline-block w-40">
+          <canvas id="signature-pad" width="200" height="100" class="w-full h-24 rounded"></canvas>
+          <button id="btnClearSign" class="no-print absolute -top-2 -right-2 bg-white border border-red-200 rounded-full p-1 text-red-500 shadow-sm">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <p id="inspector-name" class="mt-2 font-bold border-b border-black uppercase text-xs">-</p>
+          <p class="text-[9px] text-slate-500">Safety Inspector</p>
+        </div>
+      </div>
+      <div class="text-center flex flex-col justify-end">
+        <p class="text-[10px] uppercase font-bold mb-20 text-slate-500">Mengetahui,</p>
+        <p class="font-bold border-b border-black w-40 mx-auto uppercase text-xs">Kepala Teknik Tambang</p>
+        <p class="text-[9px] text-slate-500">KTT / Management</p>
+      </div>
+    </div>
 
     <div class="html2pdf__page-break"></div>
     <div class="mt-10">
-      <h3 class="text-center font-bold uppercase border-b-2 border-black pb-2 mb-6">Lampiran Foto Temuan</h3>
-      <div id="photos-grid" class="grid grid-cols-2 gap-4">
-        </div>
-    </div>
-
-    <div class="mt-12 pt-8 border-t-2 border-slate-900">
-      <h3 class="text-xs font-black uppercase mb-4 tracking-widest">Catatan & Arahan Manajemen</h3>
-      <div id="comments-thread" class="space-y-3 mb-6">
-        </div>
-      
-      <div id="admin-comment-form" class="hidden no-print bg-slate-50 p-6 rounded-xl border border-slate-200">
-        <label class="text-[10px] font-bold text-blue-600 block mb-2 uppercase">Kirim Arahan Manajemen (<span id="label-role"></span>)</label>
-        <textarea id="input-comment-text" class="w-full border rounded-lg p-3 text-sm mb-3" placeholder="Tulis instruksi perbaikan..."></textarea>
-        <button id="btnSubmitComment" class="bg-blue-600 text-white px-4 py-2 rounded font-bold text-xs uppercase shadow hover:bg-blue-700">Submit Arahan</button>
-      </div>
-    </div>
-
-    <div class="mt-16 grid grid-cols-2 gap-20 text-center">
-      <div>
-        <p class="text-[10px] uppercase mb-16 font-bold">Inspektur,</p>
-        <div class="relative inline-block w-48">
-          <canvas id="signature-pad" width="200" height="100" class="w-full h-24 rounded shadow-inner"></canvas>
-          <button id="btnClearSign" class="no-print absolute -top-4 -right-4 bg-white border rounded-full p-1 text-red-500 shadow-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round"/></svg>
-          </button>
-          <p id="inspector-name" class="mt-4 font-bold border-b border-black uppercase pb-1">-</p>
-          <p class="text-[10px] text-slate-400">Safety Inspector</p>
-        </div>
-      </div>
-      <div class="flex flex-col justify-end items-center">
-        <p class="text-[10px] uppercase mb-20 font-bold">Mengetahui,</p>
-        <p class="font-bold border-b border-black w-48 uppercase pb-1">Kepala Teknik Tambang</p>
-        <p class="text-[10px] text-slate-400">KTT / Management</p>
-      </div>
+      <h3 class="text-center font-bold uppercase border-b-2 border-black pb-2 mb-6 text-sm">Lampiran Dokumentasi Temuan</h3>
+      <div id="photos-grid" class="grid grid-cols-2 gap-6"></div>
     </div>
 
   </div>
 
-  <div id="modal-closeout" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl p-8 max-w-md w-full shadow-2xl">
-      <h3 class="text-xl font-bold mb-4">Update Perbaikan</h3>
+  <div id="modal-closeout" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl">
+      <h3 class="text-lg font-bold mb-4">Update Perbaikan</h3>
       <input type="file" id="file-perbaikan" class="mb-4 text-xs block w-full" accept="image/*">
-      <textarea id="ket-perbaikan" class="w-full border p-3 rounded-lg text-sm h-24 mb-4" placeholder="Keterangan perbaikan..."></textarea>
+      <textarea id="ket-perbaikan" class="w-full border p-2 rounded text-xs h-20 mb-4" placeholder="Keterangan tindakan..."></textarea>
       <div class="flex gap-2">
-        <button onclick="toggleModalClose(false)" class="flex-1 py-2 bg-slate-200 rounded font-bold text-xs">BATAL</button>
-        <button id="btnSimpanCloseOut" class="flex-1 py-2 bg-green-600 text-white rounded font-bold text-xs">SIMPAN</button>
+        <button onclick="toggleModalClose(false)" class="flex-1 py-2 bg-slate-100 rounded font-bold text-xs uppercase">Batal</button>
+        <button id="btnSimpanCloseOut" class="flex-1 py-2 bg-green-600 text-white rounded font-bold text-xs uppercase">Simpan</button>
       </div>
     </div>
   </div>
