@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Laporan Inspeksi Tambang | Professional Report</title>
+  <title>Laporan Inspeksi Tambang | MiningInspect</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/app.css">
@@ -11,145 +11,134 @@
   <script src="js/app.js" defer></script>
   <script src="js/detail-inspeksi.js" defer></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-    body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #1e293b; }
-    #signature-pad { touch-action: none; background-color: #ffffff; cursor: crosshair; }
-    .html2pdf__page-break { page-break-after: always; }
-    .report-card { border: 1px solid #e2e8f0; border-radius: 1.25rem; background: white; transition: all 0.3s ease; }
-    .report-card:hover { border-color: #3b82f6; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
-    @media print { .no-print { display: none !important; } }
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap');
+    body { font-family: 'Roboto', sans-serif; background-color: #f8fafc; }
+    
+    /* Document Style */
+    .doc-page { background: white; width: 100%; max-width: 900px; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+    .doc-header-table td { border: 1px solid #000; padding: 8px; vertical-align: middle; }
+    .doc-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .doc-table th, .doc-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
+    .doc-table th { background-color: #f1f5f9; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; color: #475569; }
+    
+    #signature-pad { border: 1px solid #cbd5e1; background: #fff; cursor: crosshair; touch-action: none; }
+    
+    @media print {
+      body { background: white; }
+      .no-print { display: none !important; }
+      .doc-page { box-shadow: none; width: 100%; max-width: 100%; }
+    }
   </style>
 </head>
-<body class="antialiased">
-  <div id="navbar"></div>
+<body class="p-0 md:p-8">
 
-  <div class="max-w-5xl mx-auto py-10 px-6">
-    <div class="flex justify-between items-center mb-6 no-print">
-      <a href="dashboard.html" class="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold text-sm transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-        Dashboard
-      </a>
-      <button id="btnDownloadPDF" class="bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-xl active:scale-95">
-        Cetak Laporan PDF
-      </button>
+  <div class="max-w-4xl mx-auto mb-6 no-print flex justify-between items-center px-4">
+    <a href="dashboard.html" class="text-blue-600 font-bold flex items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Dashboard
+    </a>
+    <button id="btnDownloadPDF" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold shadow-lg transition">
+      Cetak ke PDF
+    </button>
+  </div>
+
+  <div id="printable-area" class="doc-page p-8 md:p-12 min-h-screen">
+    
+    <table class="doc-header-table w-full mb-8">
+      <tr>
+        <td rowspan="3" width="20%" class="text-center font-black text-2xl tracking-tighter">
+          <span class="text-blue-600">JPC</span><br><span class="text-xs font-normal">MINING</span>
+        </td>
+        <td rowspan="3" width="40%" class="text-center font-bold text-xl uppercase tracking-widest">Laporan Inspeksi</td>
+        <td width="40%" class="text-[10px]">Form No: <b>003/F/ENG/JPC/VIII/2021</b></td>
+      </tr>
+      <tr><td class="text-[10px]">Revisi: <b>1</b></td></tr>
+      <tr><td class="text-[10px]">Tanggal Efektif: <b>1 Agustus 2021</b></td></tr>
+    </table>
+
+    <div class="grid grid-cols-2 gap-x-12 gap-y-4 mb-8 text-sm">
+      <div class="flex justify-between border-b border-slate-100 pb-1">
+        <span class="text-slate-400">Nomor Inspeksi:</span>
+        <span id="report-id" class="font-bold">-</span>
+      </div>
+      <div class="flex justify-between border-b border-slate-100 pb-1">
+        <span class="text-slate-400">Tanggal:</span>
+        <span id="det-tanggal" class="font-bold">-</span>
+      </div>
+      <div class="flex justify-between border-b border-slate-100 pb-1">
+        <span class="text-slate-400">Lokasi:</span>
+        <span id="det-lokasi" class="font-bold">-</span>
+      </div>
+      <div class="flex justify-between border-b border-slate-100 pb-1">
+        <span class="text-slate-400">Area Kerja:</span>
+        <span id="det-area" class="font-bold">-</span>
+      </div>
     </div>
 
-    <div id="printable-area" class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200">
+    <table class="doc-table mb-10">
+      <thead>
+        <tr>
+          <th width="5%">No</th>
+          <th width="40%">Uraian Temuan (What & Where)</th>
+          <th width="15%">Risiko</th>
+          <th width="40%">Tindakan Perbaikan / Rekomendasi</th>
+        </tr>
+      </thead>
+      <tbody id="findings-table-body">
+        </tbody>
+    </table>
+
+    <div class="html2pdf__page-break"></div>
+    <div class="mt-10">
+      <h3 class="text-center font-bold uppercase border-b-2 border-black pb-2 mb-6">Lampiran Foto Temuan</h3>
+      <div id="photos-grid" class="grid grid-cols-2 gap-4">
+        </div>
+    </div>
+
+    <div class="mt-12 pt-8 border-t-2 border-slate-900">
+      <h3 class="text-xs font-black uppercase mb-4 tracking-widest">Catatan & Arahan Manajemen</h3>
+      <div id="comments-thread" class="space-y-3 mb-6">
+        </div>
       
-      <div class="bg-gradient-to-r from-slate-900 to-slate-800 p-10 text-white">
-        <div class="flex justify-between items-start">
-          <div>
-            <h1 class="text-3xl font-black tracking-tighter uppercase">Mining<span class="text-blue-400">Inspect</span> <span class="font-light">K2</span></h1>
-            <p class="text-slate-400 text-[10px] mt-1 uppercase tracking-[0.3em] font-semibold">Official Health & Safety Report</p>
-          </div>
-          <div class="text-right">
-            <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Report ID</p>
-            <p id="report-id" class="text-lg font-mono font-bold text-blue-400">-</p>
-          </div>
+      <div id="admin-comment-form" class="hidden no-print bg-slate-50 p-6 rounded-xl border border-slate-200">
+        <label class="text-[10px] font-bold text-blue-600 block mb-2 uppercase">Kirim Arahan Manajemen (<span id="label-role"></span>)</label>
+        <textarea id="input-comment-text" class="w-full border rounded-lg p-3 text-sm mb-3" placeholder="Tulis instruksi perbaikan..."></textarea>
+        <button id="btnSubmitComment" class="bg-blue-600 text-white px-4 py-2 rounded font-bold text-xs uppercase shadow hover:bg-blue-700">Submit Arahan</button>
+      </div>
+    </div>
+
+    <div class="mt-16 grid grid-cols-2 gap-20 text-center">
+      <div>
+        <p class="text-[10px] uppercase mb-16 font-bold">Inspektur,</p>
+        <div class="relative inline-block w-48">
+          <canvas id="signature-pad" width="200" height="100" class="w-full h-24 rounded shadow-inner"></canvas>
+          <button id="btnClearSign" class="no-print absolute -top-4 -right-4 bg-white border rounded-full p-1 text-red-500 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <p id="inspector-name" class="mt-4 font-bold border-b border-black uppercase pb-1">-</p>
+          <p class="text-[10px] text-slate-400">Safety Inspector</p>
         </div>
       </div>
+      <div class="flex flex-col justify-end items-center">
+        <p class="text-[10px] uppercase mb-20 font-bold">Mengetahui,</p>
+        <p class="font-bold border-b border-black w-48 uppercase pb-1">Kepala Teknik Tambang</p>
+        <p class="text-[10px] text-slate-400">KTT / Management</p>
+      </div>
+    </div>
 
-      <div class="p-8 md:p-12">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 bg-slate-50 p-8 rounded-3xl border border-slate-100">
-          <div>
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Periode Inspeksi</span>
-            <p id="det-tanggal" class="text-lg font-bold text-slate-800">-</p>
-          </div>
-          <div>
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Lokasi Utama</span>
-            <p id="det-lokasi" class="text-lg font-bold text-slate-800">-</p>
-          </div>
-          <div>
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Area Kerja</span>
-            <p id="det-area" class="text-lg font-bold text-slate-800">-</p>
-          </div>
-        </div>
+  </div>
 
-        <h3 class="text-xl font-black text-slate-800 mb-8 flex items-center gap-3">
-          <span class="w-8 h-1 bg-blue-600 rounded-full"></span>
-          Daftar Temuan Lapangan
-        </h3>
-        
-        <div id="findings-list" class="space-y-10">
-           <div class="animate-pulse flex flex-col gap-4">
-              <div class="h-48 bg-slate-100 rounded-3xl"></div>
-           </div>
-        </div>
-
-        <div class="mt-20 pt-12 border-t border-slate-100">
-          <h3 class="text-xl font-black text-slate-800 mb-8 flex items-center gap-3">
-            <span class="w-8 h-1 bg-blue-600 rounded-full"></span>
-            Arahan & Saran Manajemen
-          </h3>
-          
-          <div id="comments-thread" class="space-y-6 mb-10">
-            <p class="text-sm text-slate-400 italic">Belum ada arahan manajemen untuk inspeksi ini.</p>
-          </div>
-
-          <div id="admin-comment-form" class="hidden no-print bg-blue-50/50 p-8 rounded-3xl border border-blue-100">
-            <div class="flex items-center gap-2 mb-4 text-blue-700">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd" /></svg>
-              <label class="text-xs font-black uppercase tracking-widest">Kirim Arahan Sebagai <span id="label-role" class="underline"></span></label>
-            </div>
-            <textarea id="input-comment-text" class="w-full border-0 focus:ring-2 focus:ring-blue-500 rounded-2xl p-5 text-sm shadow-inner mb-4 min-h-[120px]" placeholder="Tulis catatan atau instruksi perbaikan..."></textarea>
-            <div class="flex justify-end">
-              <button id="btnSubmitComment" class="bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition shadow-lg shadow-blue-200">
-                Kirim Komentar
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-20 grid grid-cols-1 md:grid-cols-2 gap-16 items-end border-t border-slate-100 pt-12">
-          <div class="max-w-xs mx-auto md:mx-0 text-center md:text-left">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Disusun Oleh Inspektur</p>
-            <div class="relative inline-block w-full">
-              <div class="border-b-2 border-slate-900 pb-2 mb-4">
-                <canvas id="signature-pad" class="w-full h-36 rounded-2xl border border-slate-100 shadow-inner" width="400" height="180"></canvas>
-                <button id="btnClearSign" class="no-print absolute -top-3 -right-3 bg-white border border-slate-200 shadow-md text-[9px] font-black px-3 py-1 rounded-full text-red-500 hover:bg-red-50 transition">RESET</button>
-              </div>
-              <p id="inspector-name" class="font-black text-slate-900 uppercase tracking-tight text-xl">-</p>
-              <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-1">Safety Inspector Official</p>
-            </div>
-          </div>
-          <div class="text-center md:text-right hidden md:block">
-            <p class="text-[10px] text-slate-300 font-medium italic leading-relaxed">
-              Dokumen ini dihasilkan secara otomatis oleh sistem <br>
-              MiningInspect Enterprise v2.5. Berfungsi sebagai <br>
-              catatan resmi keselamatan pertambangan.
-            </p>
-          </div>
-        </div>
-
+  <div id="modal-closeout" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl p-8 max-w-md w-full shadow-2xl">
+      <h3 class="text-xl font-bold mb-4">Update Perbaikan</h3>
+      <input type="file" id="file-perbaikan" class="mb-4 text-xs block w-full" accept="image/*">
+      <textarea id="ket-perbaikan" class="w-full border p-3 rounded-lg text-sm h-24 mb-4" placeholder="Keterangan perbaikan..."></textarea>
+      <div class="flex gap-2">
+        <button onclick="toggleModalClose(false)" class="flex-1 py-2 bg-slate-200 rounded font-bold text-xs">BATAL</button>
+        <button id="btnSimpanCloseOut" class="flex-1 py-2 bg-green-600 text-white rounded font-bold text-xs">SIMPAN</button>
       </div>
     </div>
   </div>
 
-  <div id="modal-closeout" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-6">
-    <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl transition-all border border-slate-200">
-      <div class="w-16 h-16 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-6">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-      </div>
-      <h3 class="text-2xl font-black mb-2 text-slate-800">Close-Out Temuan</h3>
-      <p class="text-slate-500 text-sm mb-8 leading-relaxed">Unggah foto bukti perbaikan dan berikan keterangan singkat mengenai tindakan yang telah dilakukan.</p>
-      
-      <div class="space-y-6">
-        <div class="bg-slate-50 p-6 rounded-3xl border-2 border-dashed border-slate-200 text-center">
-          <input type="file" id="file-perbaikan" class="hidden" accept="image/*">
-          <label for="file-perbaikan" class="cursor-pointer group">
-            <div class="text-blue-600 font-bold text-xs uppercase tracking-widest group-hover:underline">Pilih Foto Perbaikan</div>
-            <p class="text-[10px] text-slate-400 mt-1">JPG, PNG atau Kamera HP</p>
-          </label>
-        </div>
-        <div>
-          <textarea id="ket-perbaikan" class="w-full border-slate-200 bg-slate-50 rounded-2xl p-4 text-sm focus:ring-2 focus:ring-green-500 focus:bg-white transition" rows="3" placeholder="Apa tindakan perbaikan yang dilakukan?"></textarea>
-        </div>
-        <div class="flex gap-4 pt-4">
-          <button onclick="toggleModalClose(false)" class="flex-1 py-4 bg-slate-100 font-bold rounded-2xl text-slate-500 text-[10px] uppercase tracking-widest hover:bg-slate-200 transition">Batal</button>
-          <button id="btnSimpanCloseOut" class="flex-1 py-4 bg-green-600 font-bold rounded-2xl text-white text-[10px] uppercase tracking-widest shadow-lg shadow-green-100 hover:bg-green-700 transition">Submit Perbaikan</button>
-        </div>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
