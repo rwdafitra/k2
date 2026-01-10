@@ -7,153 +7,149 @@
 
   <!-- Tailwind -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/app.css">
 
-  <!-- Supabase & App -->
+  <!-- App -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="js/app.js" defer></script>
   <script src="js/dashboard.js" defer></script>
 </head>
 
-<body class="bg-slate-100 text-slate-800">
+<body class="bg-slate-950 text-slate-200">
 
 <!-- ===================== -->
 <!-- SIDEBAR -->
 <!-- ===================== -->
-<aside class="fixed inset-y-0 left-0 w-56 bg-slate-900 text-slate-300 flex flex-col z-40">
+<aside class="fixed inset-y-0 left-0 w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-40">
 
-  <div class="px-6 py-5 border-b border-slate-800">
-    <div class="text-lg font-extrabold text-white tracking-tight">
-      MiningInspect
+  <div class="px-6 py-6 border-b border-slate-800">
+    <div class="text-xl font-black tracking-wide text-amber-400">
+      MININGINSPECT
     </div>
-    <div class="text-xs text-slate-400 uppercase tracking-widest">
-      Safety System
+    <div class="text-xs tracking-widest text-slate-500 mt-1">
+      SAFETY CONTROL PANEL
     </div>
   </div>
 
-  <nav class="flex-1 px-3 py-4 space-y-1 text-sm font-medium">
+  <nav class="flex-1 px-4 py-6 space-y-2 text-sm font-semibold">
     <a href="dashboard.html"
-       class="flex items-center gap-3 px-4 py-3 rounded-lg bg-slate-800 text-white">
+       class="block px-4 py-3 rounded-md bg-slate-800 border border-slate-700 text-amber-400">
       Dashboard
     </a>
 
     <a href="inspeksi-baru.html"
-       class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
+       class="block px-4 py-3 rounded-md border border-transparent hover:border-slate-700 hover:bg-slate-800">
       Inspeksi Baru
     </a>
   </nav>
 
-  <div class="px-4 py-4 border-t border-slate-800 text-xs text-slate-400">
-    Sistem Inspeksi Keselamatan
+  <div class="px-6 py-4 border-t border-slate-800 text-xs text-slate-500">
+    Sistem Inspeksi Keselamatan Tambang
   </div>
 </aside>
 
 <!-- ===================== -->
-<!-- MAIN AREA -->
+<!-- MAIN -->
 <!-- ===================== -->
-<div class="ml-56 min-h-screen flex flex-col">
+<div class="ml-64 min-h-screen flex flex-col">
 
   <!-- HEADER -->
-  <header class="sticky top-0 z-30 bg-white border-b border-slate-200">
-    <div class="flex justify-between items-center px-8 py-4">
+  <header class="bg-slate-900 border-b border-slate-800">
+    <div class="flex justify-between items-center px-8 py-5">
       <div>
-        <h1 class="text-xl font-extrabold text-slate-900">
-          Dashboard
+        <h1 class="text-2xl font-black tracking-wide text-slate-100">
+          DASHBOARD
         </h1>
-        <p class="text-xs text-slate-500">
-          Ringkasan inspeksi keselamatan
+        <p class="text-xs tracking-widest text-slate-500 mt-1">
+          STATUS OPERASIONAL INSPEKSI
         </p>
       </div>
 
       <div class="flex items-center gap-4">
-        <!-- EMAIL USER (diisi app.js) -->
-        <span class="text-sm text-slate-500 hidden md:block" id="user-email"></span>
+        <span id="user-email" class="text-sm text-slate-400"></span>
 
         <a href="inspeksi-baru.html"
-           class="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition">
-          + Inspeksi Baru
+           class="px-6 py-3 bg-amber-500 text-slate-900 font-extrabold tracking-wide rounded-md hover:bg-amber-400 transition">
+          + INSPEKSI
         </a>
 
         <button id="btnLogout"
-                class="px-4 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition">
-          Logout
+                class="px-4 py-3 bg-slate-800 border border-slate-700 text-slate-200 font-bold rounded-md hover:bg-red-600 transition">
+          LOGOUT
         </button>
       </div>
     </div>
   </header>
 
   <!-- CONTENT -->
-  <main class="flex-1 px-8 py-8">
+  <main class="flex-1 px-8 py-8 space-y-8">
 
-    <!-- KPI -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <!-- KPI PANELS -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-      <div class="bg-white rounded-xl border border-slate-200 p-6">
-        <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">
-          Total Inspeksi
+      <div class="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg">
+        <p class="text-xs tracking-widest text-slate-500">
+          TOTAL INSPEKSI
         </p>
-        <p id="total-inspeksi" class="mt-3 text-4xl font-extrabold text-slate-900">
+        <p id="total-inspeksi" class="mt-4 text-5xl font-black text-slate-100">
           0
         </p>
       </div>
 
-      <div class="bg-white rounded-xl border border-slate-200 p-6">
-        <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">
-          Draft
+      <div class="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg">
+        <p class="text-xs tracking-widest text-slate-500">
+          DRAFT
         </p>
-        <p id="total-draft" class="mt-3 text-4xl font-extrabold text-amber-600">
+        <p id="total-draft" class="mt-4 text-5xl font-black text-amber-400">
           0
         </p>
       </div>
 
-      <div class="bg-white rounded-xl border border-slate-200 p-6">
-        <p class="text-xs uppercase tracking-widest text-slate-400 font-bold">
-          Closed
+      <div class="bg-slate-900 border border-slate-800 rounded-md p-6 shadow-lg">
+        <p class="text-xs tracking-widest text-slate-500">
+          CLOSED
         </p>
-        <p id="total-closed" class="mt-3 text-4xl font-extrabold text-green-600">
+        <p id="total-closed" class="mt-4 text-5xl font-black text-green-400">
           0
         </p>
       </div>
 
     </section>
 
-    <!-- ACTIVITY -->
-    <section class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <!-- ACTIVITY LOG -->
+    <section class="bg-slate-900 border border-slate-800 rounded-md shadow-lg">
 
-      <div class="px-8 py-5 border-b border-slate-100 bg-slate-50">
-        <h2 class="text-sm font-extrabold text-slate-700 uppercase tracking-widest">
-          Aktivitas Inspeksi Terakhir
+      <div class="px-6 py-4 border-b border-slate-800">
+        <h2 class="text-sm font-black tracking-widest text-slate-300">
+          LOG AKTIVITAS INSPEKSI
         </h2>
       </div>
 
-      <!-- DIISI dashboard.js -->
-      <div id="inspection-list" class="min-h-[240px]">
-        <!-- dynamic content -->
+      <div id="inspection-list" class="divide-y divide-slate-800">
+        <!-- diisi dashboard.js -->
       </div>
 
     </section>
 
   </main>
-
 </div>
 
 <!-- ===================== -->
-<!-- LOGOUT HANDLER (UI ONLY) -->
+<!-- AUTH INFO -->
 <!-- ===================== -->
 <script>
-  document.addEventListener('DOMContentLoaded', async () => {
-    if (window.supabaseClient) {
-      const { data: { user } } = await window.supabaseClient.auth.getUser();
-      if (user) {
-        document.getElementById('user-email').innerText = user.email;
-      }
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.supabaseClient) {
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    if (user) {
+      document.getElementById('user-email').innerText = user.email;
     }
+  }
 
-    document.getElementById('btnLogout').addEventListener('click', async () => {
-      await window.supabaseClient.auth.signOut();
-      location.replace('index.html');
-    });
+  document.getElementById('btnLogout').addEventListener('click', async () => {
+    await window.supabaseClient.auth.signOut();
+    location.replace('index.html');
   });
+});
 </script>
 
 </body>
